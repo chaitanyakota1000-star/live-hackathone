@@ -56,6 +56,17 @@ router.post('/register', async (req, res, next) => {
     const { email, password, role } = req.body;
     if (!email || !password) return res.status(400).json({ message: "Email and password are required." });
 
+    // Security: Basic Email Validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: "Invalid email format." });
+    }
+
+    // Security: Role Validation
+    if (role && role !== 'admin' && role !== 'user') {
+      return res.status(400).json({ message: "Invalid role specified." });
+    }
+
     const existingUser = await db.query('SELECT * FROM users WHERE email = $1', [email]);
     if (existingUser.rows.length > 0) return res.status(400).json({ message: "User already exists." });
 
@@ -112,6 +123,12 @@ router.get('/me', authMiddleware, async (req, res, next) => {
 router.post('/sites', authMiddleware, async (req, res, next) => {
   try {
     const { url } = req.body;
+    
+    // Security: Basic URL Input Validation
+    if (!url || typeof url !== 'string' || (!url.startsWith('http://') && !url.startsWith('https://'))) {
+      return res.status(400).json({ message: "Invalid URL format. Must begin with http:// or https://" });
+    }
+
     const result = await db.query(
       'INSERT INTO sites (owner_id, url) VALUES ($1, $2) RETURNING *',
       [req.user.id, url]
