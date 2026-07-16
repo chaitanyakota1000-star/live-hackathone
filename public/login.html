@@ -7,6 +7,9 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
 tailwind.config={darkMode:'class',theme:{extend:{fontFamily:{sans:['Inter','sans-serif'],mono:['JetBrains Mono','monospace']}}}}
+
+// Configuration
+window.API_BASE_URL = 'https://system-siege-backend.onrender.com';
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
@@ -324,7 +327,7 @@ async function doSignIn(e){
   btn.disabled = true;
 
   try {
-    const res = await fetch('/api/login', {
+    const res = await fetch(`${window.API_BASE_URL}/api/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password: pwd })
@@ -341,9 +344,11 @@ async function doSignIn(e){
       btn.disabled = false;
     }
   } catch(err) {
-    console.warn("Backend unreachable. Entering Static Demo Mode.");
-    localStorage.setItem('jwt', 'static_demo_token_123');
-    window.location.href = 'index.html';
+    const errEl = document.getElementById('si-global-err');
+    errEl.textContent = 'Network error. Make sure the Render backend is running.';
+    errEl.classList.remove('hidden');
+    btn.innerHTML = originalText;
+    btn.disabled = false;
   }
 }
 /* ---------- SIGN UP ---------- */
@@ -382,10 +387,10 @@ async function doSignUp(e){
   btn.disabled = true;
 
   try {
-    const res = await fetch('/api/register', {
+    const res = await fetch(`${window.API_BASE_URL}/api/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password: pwd, role: 'user' })
+      body: JSON.stringify({ name: name, email: email, password: pwd, role: 'user' })
     });
     const data = await res.json();
     if (res.ok) {
@@ -394,10 +399,14 @@ async function doSignUp(e){
       document.getElementById('si-email').value = email;
       document.getElementById('si-pwd').value = pwd;
     } else {
-      alert(data.message || 'Registration failed');
+      const errEl = document.getElementById('su-global-err');
+      errEl.textContent = data.message || 'Registration failed';
+      errEl.classList.remove('hidden');
     }
   } catch(err) {
-    alert('Network error. Please check your connection.');
+    const errEl = document.getElementById('su-global-err');
+    errEl.textContent = 'Network error. Make sure the Render backend is running.';
+    errEl.classList.remove('hidden');
   } finally {
     btn.innerHTML = originalText;
     btn.disabled = false;
