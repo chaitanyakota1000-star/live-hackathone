@@ -4,19 +4,46 @@ import { GoogleGenAI } from '@google/genai';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { diffLines } from 'diff';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const { Pool } = pkg;
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET;
 
 // 1. Initialize the PostgreSQL Connection Pool
-const db = new Pool({
-  host: process.env.DB_HOST || 'db',
-  user: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD || 'secret_db_pass',
-  database: process.env.DB_NAME || 'system_siege',
-  port: 5432,
-});
+const dbConfig = process.env.DATABASE_URL
+  ? { connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } }
+  : {
+      host: process.env.DB_HOST || 'db',
+      user: process.env.DB_USER || 'postgres',
+      password: process.env.DB_PASSWORD || 'secret_db_pass',
+      database: process.env.DB_NAME || 'system_siege',
+      port: 5432,
+    };
+
+const db = new Pool(dbConfig);
+
+// Initialize database schema automatically for managed environments (like Render)
+const initDb = async () => {
+  try {
+    const checkTable = await db.query("SELECT to_regclass('public.users')");
+    if (checkTable.rows[0].to_regclass === null) {
+      console.log('Database empty. Running init.sql...');
+      const sqlPath = path.join(__dirname, '../../db/init.sql');
+      const sql = fs.readFileSync(sqlPath, 'utf8');
+      await db.query(sql);
+      console.log('Database schema and seed data created successfully.');
+    }
+  } catch (err) {
+    console.error('Failed to initialize database schema:', err.message);
+  }
+};
+initDb();
 
 // Auto-migrate schema to support live diffs
 db.query('ALTER TABLE snapshots ADD COLUMN IF NOT EXISTS diff TEXT')

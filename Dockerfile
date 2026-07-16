@@ -9,6 +9,7 @@ COPY package*.json ./
 RUN npm install --production
 
 COPY src ./src
+COPY public ./public
 
 # The node:alpine image ships a built-in unprivileged "node" user.
 # Running as it instead of root limits the blast radius if the

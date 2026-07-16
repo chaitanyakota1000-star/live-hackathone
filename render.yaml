@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: system-siege-backend
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: ohio
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: system-siege-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: GEMINI_API_KEY
+        sync: false # Must be provided manually in the Render dashboard for security
+      - key: PORT
+        value: 3000
+
+databases:
+  - name: system-siege-db
+    plan: free
+    databaseName: system_siege
+    user: postgres
+    region: ohio
