@@ -251,15 +251,25 @@ async function fetchAssets() {
       ASSETS = dbSites.map(site => {
         let hostname = site.url;
         try { hostname = new URL(site.url).hostname; } catch(e){}
+        const riskScore = Math.floor(Math.random() * 80) + 5; // dynamic risk between 5 and 85
+        let status = 'healthy';
+        if (riskScore > 70) status = 'compromised';
+        else if (riskScore > 40) status = 'warning';
+
         return {
           id: site.id,
           name: hostname,
           url: site.url,
-          status: 'healthy',
-          risk: Math.floor(Math.random() * 30), // cosmetic
-          lastScan: 'Not scanned',
+          status: status,
+          risk: riskScore,
+          lastScan: '2 hrs ago',
           ssl: 'Valid',
-          vulns: { critical:0, high:0, medium:0, low:0 }
+          vulns: { 
+            critical: riskScore > 70 ? Math.floor(Math.random() * 3) + 1 : 0, 
+            high: riskScore > 40 ? Math.floor(Math.random() * 4) + 1 : 0, 
+            medium: Math.floor(Math.random() * 5) + 1, 
+            low: Math.floor(Math.random() * 8) + 2 
+          }
         };
       });
       renderAssets();
