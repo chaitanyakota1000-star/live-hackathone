@@ -1,5 +1,6 @@
 import express from 'express';
 import helmet from 'helmet';
+import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import apiRouter from './routes/api.js';
@@ -8,6 +9,13 @@ const app = express();
 
 // Security: Apply strict security headers ONLY to API routes to prevent breaking frontend inline scripts
 app.use('/api', helmet());
+
+// Security: Allow cross-origin requests from the GitHub Pages frontend
+app.use(cors({
+  origin: ['https://chaitanyakota1000-star.github.io', 'http://localhost:3000'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Security: Limit request body size to 1MB to prevent DoS
 app.use(express.json({ limit: '1mb' }));
