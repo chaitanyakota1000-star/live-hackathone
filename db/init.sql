@@ -2,6 +2,8 @@ DROP TABLE IF EXISTS flags CASCADE;
 DROP TABLE IF EXISTS snapshots CASCADE;
 DROP TABLE IF EXISTS sites CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
+DROP TABLE IF EXISTS audit_logs CASCADE;
+DROP TABLE IF EXISTS alerts CASCADE;
 
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
@@ -29,6 +31,21 @@ CREATE TABLE flags (
     snapshot_id INTEGER REFERENCES snapshots(id) ON DELETE CASCADE NOT NULL,
     severity VARCHAR(50) NOT NULL,
     summary TEXT NOT NULL
+);
+
+CREATE TABLE audit_logs (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE NOT NULL,
+    action TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE alerts (
+    id SERIAL PRIMARY KEY,
+    site_id INTEGER REFERENCES sites(id) ON DELETE CASCADE NOT NULL,
+    message TEXT NOT NULL,
+    severity VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Seed an operational user and site item so the dashboard has elements to interact with immediately
