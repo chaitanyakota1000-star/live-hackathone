@@ -70,50 +70,70 @@ function doSignOut() {
    SECTION 1: DATA
    ============================================================ */
 
-const ALERTS = [
-  {
-    id: 'INC-2847', title: 'Website Defacement Detected',
-    asset: 'api.shopfront.com', severity: 'critical', status: 'open', time: '2 min ago',
-    desc: 'Homepage HTML structure changed by 34%. Possible content injection attack.',
-    ai: 'Attacker injected script tags and modified visible content. Recommend immediate rollback and forensic analysis.'
-  },
-  {
-    id: 'INC-2846', title: 'SQL Injection Attack Blocked',
-    asset: 'portal.fintech.io', severity: 'high', status: 'investigating', time: '18 min ago',
-    desc: '47 SQL injection attempts blocked in 5 minutes from IP 185.220.101.45.',
-    ai: 'Coordinated automated attack. IP belongs to known Tor exit node. Recommend permanent block.'
-  },
-  {
-    id: 'INC-2845', title: 'Unusual Bot Traffic Spike',
-    asset: 'www.healthportal.org', severity: 'medium', status: 'open', time: '1 hr ago',
-    desc: 'Request rate 340% above baseline. Possible DDoS reconnaissance.',
-    ai: 'Traffic pattern consistent with credential stuffing preparation. Enable rate limiting.'
-  },
-  {
-    id: 'INC-2844', title: 'SSL Certificate Near Expiry',
-    asset: 'legacy.govdata.net', severity: 'medium', status: 'open', time: '3 hr ago',
-    desc: 'SSL certificate expires in 8 days. Service disruption imminent if not renewed.',
-    ai: "Auto-renewal appears disabled. Contact certificate authority or enable Let's Encrypt."
-  },
-  {
-    id: 'INC-2843', title: 'Admin Panel Bruteforce Attempt',
-    asset: 'admin.internal.io', severity: 'high', status: 'open', time: '4 hr ago',
-    desc: '230 failed login attempts from 3 IPs in 10 minutes.',
-    ai: 'Brute force pattern detected. Implement account lockout, enable MFA, geo-block suspicious IPs.'
-  },
-  {
-    id: 'INC-2842', title: 'New Vulnerability: CVE-2025-3841',
-    asset: 'Multiple (3 assets)', severity: 'critical', status: 'open', time: '6 hr ago',
-    desc: 'Critical XSS vulnerability in login form affecting 3 monitored assets.',
-    ai: 'Patch available. Upgrade frontend validation library to v3.2.1 or later.'
-  },
-  {
-    id: 'INC-2841', title: 'Security Header Misconfiguration',
-    asset: 'staging.devteam.app', severity: 'low', status: 'resolved', time: '1 day ago',
-    desc: 'Missing HSTS, CSP, and X-Frame-Options headers on staging environment.',
-    ai: 'Fixed by adding headers to nginx.conf. Verify across all environments.'
-  },
-];
+let ALERTS = [];
+
+async function fetchAlerts() {
+  try {
+    const res = await fetch('/api/alerts', {
+      headers: { 'Authorization': `Bearer ${_jwt}` }
+    });
+    if (res.ok) {
+      ALERTS = await res.json();
+      renderAlerts();
+    }
+  } catch (err) {
+    console.error('Failed to fetch alerts', err);
+  }
+}
+
+// Call on load
+if (_jwt) {
+  fetchAlerts();
+  fetchStats();
+  fetchAuditLogs();
+}
+
+async function fetchStats() {
+  try {
+    const res = await fetch('/api/stats', {
+      headers: { 'Authorization': `Bearer ${_jwt}` }
+    });
+    if (res.ok) {
+      const stats = await res.json();
+      
+      const elSites = document.getElementById('stat-total-sites');
+      const elCritical = document.getElementById('stat-critical-alerts');
+      const elWarning = document.getElementById('stat-warning-alerts');
+      const elScans = document.getElementById('stat-total-scans');
+      const badgeLastScan = document.getElementById('badge-last-scan');
+
+      if (elSites) elSites.textContent = stats.totalSites;
+      if (elCritical) elCritical.textContent = stats.criticalAlerts;
+      if (elWarning) elWarning.textContent = stats.warningAlerts;
+      if (elScans) elScans.textContent = stats.totalScans;
+      
+      if (badgeLastScan) {
+        if (stats.lastScanTime) {
+          const date = new Date(stats.lastScanTime);
+          const now = new Date();
+          const diffMs = now - date;
+          const diffMins = Math.floor(diffMs / 60000);
+          if (diffMins < 60) {
+            badgeLastScan.textContent = diffMins === 0 ? 'Just now' : `${diffMins}m ago`;
+          } else if (diffMins < 1440) {
+            badgeLastScan.textContent = `${Math.floor(diffMins / 60)}h ago`;
+          } else {
+            badgeLastScan.textContent = `${Math.floor(diffMins / 1440)}d ago`;
+          }
+        } else {
+          badgeLastScan.textContent = 'N/A';
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Failed to fetch stats', err);
+  }
+}
 
 const VULNS = [
   { id: 'CVE-2025-3841',  name: 'Cross-Site Scripting (XSS)', asset: 'api.shopfront.com',    cvss: 9.1, severity: 'critical', priority: 'P0', status: 'open' },
@@ -126,18 +146,7 @@ const VULNS = [
   { id: 'INFO-LEAK-008',  name: 'Server Version Disclosure',   asset: 'Multiple',             cvss: 3.1, severity: 'low',      priority: 'P3', status: 'open' },
 ];
 
-const AUDIT_LOGS = [
-  { actor: 'Abhijith Kasyap', action: 'Triggered emergency scan on all assets',                             type: 'security',    time: '14:04:33', icon: 'radar',         color: '#f43f5e' },
-  { actor: 'AI Engine',       action: 'Defacement detected on api.shopfront.com — Alert INC-2847 created',  type: 'security',    time: '14:02:14', icon: 'zap',           color: '#f43f5e' },
-  { actor: 'System',          action: 'Scheduled scan completed — 12/12 assets scanned',                    type: 'system',      time: '14:00:01', icon: 'check-circle',  color: '#22c55e' },
-  { actor: 'Priya Sharma',    action: 'Updated role: James Wilson → Security Analyst',                      type: 'access',      time: '13:45:22', icon: 'user-check',    color: '#06b6d4' },
-  { actor: 'AI Engine',       action: 'CVE-2025-3841 matched against 3 monitored assets',                   type: 'security',    time: '13:30:11', icon: 'brain-circuit', color: '#a78bfa' },
-  { actor: 'Abhijith Kasyap', action: 'Added asset: cdn.globalassets.net to monitoring',                    type: 'config',      time: '12:55:04', icon: 'plus-circle',   color: '#06b6d4' },
-  { actor: 'System',          action: 'SOC 2 compliance report auto-generated',                              type: 'compliance',  time: '12:00:00', icon: 'file-check-2',  color: '#7c3aed' },
-  { actor: 'James Wilson',    action: 'Exported vulnerability report (PDF)',                                 type: 'access',      time: '11:34:17', icon: 'download',      color: '#64748b' },
-  { actor: 'Priya Sharma',    action: 'Dismissed alert INC-2839 as false positive',                         type: 'security',    time: '11:10:09', icon: 'x-circle',      color: '#f59e0b' },
-  { actor: 'System',          action: 'INC-2841 auto-resolved: headers now present after deploy',           type: 'system',      time: '10:45:00', icon: 'shield-check',  color: '#22c55e' },
-];
+let AUDIT_LOGS = [];
 
 const USERS = [
   { name: 'Abhijith Kasyap',     email: 'a.kasyap@company.com',    role: 'Super Admin',       status: 'active',   lastActive: 'Now',        mfa: true,  avatar: 'AK', color: 'linear-gradient(135deg, #0891b2, #7c3aed)' },
@@ -316,8 +325,11 @@ function renderAssets() {
             <button class="btn-primary text-xs py-1 px-2.5" onclick="triggerScanReal(${a.id})">
               Check
             </button>
-            <button class="btn-secondary text-xs py-1 px-2.5">
-              <i data-lucide="ellipsis" class="w-3 h-3"></i>
+            <button class="btn-secondary text-xs py-1 px-2.5" onclick="openHistory(${a.id}, '${a.name}')" title="View History">
+              <i data-lucide="history" class="w-3 h-3"></i>
+            </button>
+            <button class="btn-secondary text-xs py-1 px-2.5 text-critical-400 hover:text-critical-300" onclick="deleteSite(${a.id}, '${a.name}')" title="Delete Site">
+              <i data-lucide="trash-2" class="w-3 h-3"></i>
             </button>
           </div>
         </td>
@@ -357,6 +369,36 @@ async function addAssetReal() {
   }
 }
 
+async function deleteSite(siteId, siteName) {
+  if (!confirm(`Are you sure you want to permanently delete the site "${siteName}" and all its history?`)) {
+    return;
+  }
+  
+  try {
+    const res = await fetch(`/api/sites/${siteId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${_jwt}` }
+    });
+    
+    if (res.ok) {
+      await fetchAssets();
+    } else {
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 401 || res.status === 403) {
+        alert('Unauthorized: You do not have permission to delete this site.');
+      } else if (res.status === 404) {
+        alert('Site not found. It may have already been deleted.');
+        await fetchAssets();
+      } else {
+        alert(data.message || data.error || 'Server error while deleting site.');
+      }
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Network error while deleting site.');
+  }
+}
+
 /* ============================================================
    SECTION 6: RENDER — ALERTS LIST
    ============================================================ */
@@ -378,31 +420,38 @@ function renderAlerts() {
     resolved:      '<span class="badge badge-ok"        style="font-size:10px;">Resolved</span>',
   };
 
+  if (ALERTS.length === 0) {
+    el.innerHTML = '<div class="p-5 text-center text-sm text-surface-500">No active alerts.</div>';
+    return;
+  }
+
   el.innerHTML = ALERTS.map(a => {
-    const s = sevMap[a.severity];
-    const actionBtn = a.status !== 'resolved'
-      ? `<button class="btn-primary  text-xs py-1.5 px-3">Investigate</button>`
-      : `<button class="btn-secondary text-xs py-1.5 px-3">View</button>`;
+    // Determine severity, defaulting to low if not mapped
+    const severity = (a.severity || 'low').toLowerCase();
+    const s = sevMap[severity] || sevMap['low'];
+    const title = 'Security Scan Anomaly';
+    const timeStr = new Date(a.created_at).toLocaleString();
+    const status = 'open'; // DB schema does not have status yet
+    const actionBtn = `<button class="btn-primary text-xs py-1.5 px-3">Investigate</button>`;
 
     return `
-      <div class="p-5 hover:bg-surface-900/50 transition-all" style="${a.status === 'resolved' ? 'opacity:0.65;' : ''}">
+      <div class="p-5 hover:bg-surface-900/50 transition-all">
         <div class="flex items-start gap-4">
           <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:${s.bg};">
             <i data-lucide="${s.icon}" class="w-5 h-5" style="color:${s.color};"></i>
           </div>
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-3 flex-wrap mb-1">
-              <span class="text-sm font-semibold text-white">${a.title}</span>
-              <span class="badge ${s.badge}" style="font-size:10px;">${a.severity.charAt(0).toUpperCase() + a.severity.slice(1)}</span>
-              ${statusBadge[a.status]}
-              <span class="text-xs text-surface-500 font-mono">${a.id}</span>
+              <span class="text-sm font-semibold text-white">${title}</span>
+              <span class="badge ${s.badge}" style="font-size:10px;">${severity.charAt(0).toUpperCase() + severity.slice(1)}</span>
+              ${statusBadge[status]}
+              <span class="text-xs text-surface-500 font-mono">ID: ${a.id}</span>
             </div>
-            <div class="text-xs text-surface-400 mb-1">${a.asset} — ${a.time}</div>
-            <div class="text-xs text-surface-500 mb-2">${a.desc}</div>
-            <div class="flex items-start gap-2 p-2.5 rounded-lg" style="background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);">
+            <div class="text-xs text-surface-400 mb-1">${a.asset_name} — ${timeStr}</div>
+            <div class="flex items-start gap-2 p-2.5 rounded-lg mt-2" style="background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);">
               <i data-lucide="brain-circuit" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5" style="color:#a78bfa;"></i>
               <span class="text-xs" style="color:#c4b5fd;">
-                <strong style="color:#a78bfa;">AI:</strong> ${a.ai}
+                <strong style="color:#a78bfa;">AI:</strong> ${a.message}
               </span>
             </div>
           </div>
@@ -458,25 +507,89 @@ function renderVulns() {
    SECTION 8: RENDER — AUDIT TIMELINE
    ============================================================ */
 
-function renderAudit() {
-  const el = document.getElementById('audit-timeline');
-  if (!el) return;
+async function fetchAuditLogs() {
+  const loading = document.getElementById('audit-loading');
+  const error = document.getElementById('audit-error');
+  const empty = document.getElementById('audit-empty');
+  const table = document.getElementById('audit-table-container');
 
-  el.innerHTML = `<div class="timeline-line"></div>` + AUDIT_LOGS.map(log => `
-    <div class="relative pl-12 pb-5 last:pb-0">
-      <div class="absolute left-0 w-10 h-10 rounded-full flex items-center justify-center z-10"
-           style="background:rgba(15,23,42,0.9);border:2px solid ${log.color}30;box-shadow:0 0 12px ${log.color}20;">
-        <i data-lucide="${log.icon}" class="w-4 h-4" style="color:${log.color};"></i>
-      </div>
-      <div class="card p-3.5">
-        <div class="flex items-center gap-3 flex-wrap mb-1">
-          <span class="text-sm font-semibold text-white">${log.actor}</span>
-          <span class="badge badge-info" style="font-size:9px;">${log.type}</span>
-          <span class="text-xs text-surface-500 font-mono ml-auto">${log.time}</span>
-        </div>
-        <div class="text-xs text-surface-400">${log.action}</div>
-      </div>
-    </div>`).join('');
+  if (loading) {
+    loading.classList.remove('hidden');
+    if(error) error.classList.add('hidden');
+    if(empty) empty.classList.add('hidden');
+    if(table) table.style.display = 'none';
+  }
+
+  try {
+    const res = await fetch('/api/audit-logs', {
+      headers: { 'Authorization': `Bearer ${_jwt}` }
+    });
+    if (res.ok) {
+      AUDIT_LOGS = await res.json();
+      renderAudit();
+    } else {
+      if(loading) loading.classList.add('hidden');
+      if(error) error.classList.remove('hidden');
+    }
+  } catch (err) {
+    console.error('Failed to fetch audit logs', err);
+    if(loading) loading.classList.add('hidden');
+    if(error) error.classList.remove('hidden');
+  }
+}
+
+function renderAudit() {
+  const tbody = document.getElementById('audit-tbody');
+  const loading = document.getElementById('audit-loading');
+  const error = document.getElementById('audit-error');
+  const empty = document.getElementById('audit-empty');
+  const table = document.getElementById('audit-table-container');
+
+  if (!tbody) return;
+  if(loading) loading.classList.add('hidden');
+  if(error) error.classList.add('hidden');
+
+  if (AUDIT_LOGS.length === 0) {
+    if(empty) empty.classList.remove('hidden');
+    if(table) table.style.display = 'none';
+    return;
+  }
+
+  if(empty) empty.classList.add('hidden');
+  if(table) table.style.display = 'table';
+
+  tbody.innerHTML = AUDIT_LOGS.map(log => {
+    // Parse Resource from Action
+    let resource = '-';
+    if (log.action.includes('site ID')) {
+      const match = log.action.match(/site ID (\d+)/);
+      if (match) resource = `Site ${match[1]}`;
+    } else if (log.action.includes('website:')) {
+      const match = log.action.match(/website:\s*"(.+?)"/);
+      if (match) resource = match[1];
+    } else {
+      resource = 'System';
+    }
+
+    const timeStr = new Date(log.created_at).toLocaleString();
+    const userDisplay = log.user_email || 'System';
+    const initial = userDisplay.substring(0, 1).toUpperCase();
+
+    return `
+      <tr class="table-row hover:bg-surface-800 transition-colors">
+        <td class="px-5 py-3.5">
+          <div class="flex items-center gap-2">
+            <div class="w-6 h-6 rounded bg-surface-700 flex items-center justify-center text-xs text-white font-bold flex-shrink-0">${initial}</div>
+            <span class="text-sm font-semibold text-white truncate max-w-[150px]" title="${userDisplay}">${userDisplay}</span>
+          </div>
+        </td>
+        <td class="px-4 py-3.5 text-xs text-surface-300 max-w-[250px] truncate" title="${log.action}">${log.action}</td>
+        <td class="px-4 py-3.5 text-xs text-surface-500 font-mono whitespace-nowrap">${timeStr}</td>
+        <td class="px-4 py-3.5"><span class="badge badge-info truncate max-w-[150px]" title="${resource}">${resource}</span></td>
+        <td class="px-4 py-3.5"><span class="badge badge-ok"><i data-lucide="check-circle" class="w-3 h-3"></i> Success</span></td>
+      </tr>
+    `;
+  }).join('');
 
   lucide.createIcons();
 }
@@ -713,6 +826,12 @@ async function triggerScanReal(siteId) {
       progress.style.width  = '0%';
       if (res.ok) {
         alert("Gemini AI Scan Result:\n\n" + data.ai_analysis);
+        // Refresh history if the modal is currently open for this site
+        if (document.getElementById('history-modal').classList.contains('open') && window.currentHistorySiteId === siteId) {
+          openHistory(siteId, document.getElementById('history-site-name').textContent);
+        }
+        fetchAlerts(); // Refresh alerts list
+        fetchStats();  // Refresh KPIs
       } else {
         alert(data.message || data.error || 'Scan failed');
       }
@@ -724,6 +843,104 @@ async function triggerScanReal(siteId) {
     progress.style.width  = '0%';
     alert('Network error while scanning.');
   }
+}
+
+/* ============================================================
+   SECTION 12.5: HISTORY
+   ============================================================ */
+
+window.currentHistorySiteId = null;
+
+async function openHistory(siteId, siteName) {
+  window.currentHistorySiteId = siteId;
+  const modal = document.getElementById('history-modal');
+  const title = document.getElementById('history-site-name');
+  const loading = document.getElementById('history-loading');
+  const error = document.getElementById('history-error');
+  const empty = document.getElementById('history-empty');
+  const list = document.getElementById('history-list');
+
+  // Reset states
+  title.textContent = siteName;
+  loading.classList.remove('hidden');
+  error.classList.add('hidden');
+  empty.classList.add('hidden');
+  list.classList.add('hidden');
+  list.innerHTML = '';
+  modal.classList.add('open');
+
+  try {
+    const res = await fetch(`/api/sites/${siteId}/history`, {
+      headers: { 'Authorization': `Bearer ${_jwt}` }
+    });
+    
+    loading.classList.add('hidden');
+
+    if (!res.ok) {
+      error.classList.remove('hidden');
+      document.getElementById('history-error-msg').textContent = `Failed to load history (HTTP ${res.status})`;
+      return;
+    }
+
+    const data = await res.json();
+    
+    if (!data || data.length === 0) {
+      empty.classList.remove('hidden');
+      return;
+    }
+
+    renderHistory(data, list);
+    list.classList.remove('hidden');
+  } catch (err) {
+    console.error(err);
+    loading.classList.add('hidden');
+    error.classList.remove('hidden');
+    document.getElementById('history-error-msg').textContent = 'Network error while loading history.';
+  }
+}
+
+function renderHistory(historyData, container) {
+  const sevBadge = { 
+    critical: 'badge-critical', 
+    high: 'badge-high', 
+    medium: 'badge-medium', 
+    low: 'badge-low' 
+  };
+  
+  const sevColors = {
+    critical: '#f43f5e',
+    high: '#f97316',
+    medium: '#eab308',
+    low: '#22c55e'
+  };
+
+  container.innerHTML = historyData.map(h => {
+    // Determine severity from flags if available, else default to 'low'
+    const flag = h.flags && h.flags.length > 0 ? h.flags[0] : null;
+    const severity = flag ? flag.severity : 'low';
+    const aiSummary = flag ? flag.description : 'No anomalies detected.';
+    const sBadge = sevBadge[severity] || 'badge-low';
+    const sColor = sevColors[severity] || '#22c55e';
+    const timestamp = new Date(h.created_at).toLocaleString();
+    const hashShort = h.dom_hash ? h.dom_hash.substring(0, 8) + '...' : 'N/A';
+
+    return `
+      <div class="card p-4 hover:bg-surface-900/50 transition-colors" style="border-left: 3px solid ${sColor};">
+        <div class="flex items-start justify-between mb-2">
+          <div class="flex items-center gap-3">
+            <span class="badge ${sBadge} text-xs uppercase tracking-wider px-2 py-0.5">${severity}</span>
+            <span class="text-xs text-surface-500 font-mono"><i data-lucide="clock" class="inline w-3 h-3 mr-1"></i>${timestamp}</span>
+          </div>
+          <span class="text-xs text-surface-600 font-mono bg-surface-900 px-2 py-0.5 rounded" title="Snapshot Hash: ${h.dom_hash}">Snap: ${hashShort}</span>
+        </div>
+        <div class="mt-2 text-sm text-surface-300 leading-relaxed">
+          <strong class="text-white">AI Analysis:</strong> ${aiSummary}
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  lucide.createIcons();
 }
 
 /* ============================================================

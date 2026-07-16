@@ -9,17 +9,13 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
-    ports:
-      # Exposed to the host only so you can psql/DBeaver in during dev.
-      # Not needed in prod (Railway uses its own managed Postgres, not this container).
-      - "${POSTGRES_PORT:-5432}:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 5
     networks:
-      - siege-net
+      - backend-net
 
   backend:
     build: .
@@ -33,7 +29,8 @@ services:
         # trying to connect before the DB is ready.
         condition: service_healthy
     networks:
-      - siege-net
+      - frontend-net
+      - backend-net
     # Deliberately no "ports:" here. The backend is only reachable through
     # nginx, never directly from the host or internet - smaller attack surface.
 
@@ -48,14 +45,13 @@ services:
     depends_on:
       - backend
     networks:
-      - siege-net
+      - frontend-net
 
 volumes:
   pgdata:
 
 networks:
-  # All three services share this network, which is what lets them reach
-  # each other by service name (e.g. backend talks to "db", nginx talks to
-  # "backend") instead of needing hardcoded IPs.
-  siege-net:
+  frontend-net:
+    driver: bridge
+  backend-net:
     driver: bridge

@@ -212,19 +212,6 @@ select.inp{padding-left:14px}
           <div class="errmsg" id="su-phone-err"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg><span></span></div>
         </div>
 
-        <!-- Role -->
-        <div class="mb-4">
-          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Role</label>
-          <div class="relative">
-            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            <select id="su-role" class="inp" style="padding-left:42px">
-              <option value="">Select your role</option>
-              <option>Super Admin</option><option>Security Analyst</option><option>Operator</option><option>Read-Only</option>
-            </select>
-          </div>
-          <div class="errmsg" id="su-role-err"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg><span></span></div>
-        </div>
-
         <!-- Password -->
         <div class="mb-2">
           <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Password</label>
@@ -367,12 +354,11 @@ async function doSignUp(e){
   const name=document.getElementById('su-name').value.trim();
   const email=document.getElementById('su-email').value.trim();
   const phone=document.getElementById('su-phone').value.trim();
-  const role=document.getElementById('su-role').value;
   const pwd=document.getElementById('su-pwd').value;
   const confirm=document.getElementById('su-confirm').value;
 
-  ['su-name-err','su-email-err','su-phone-err','su-role-err','su-pwd-err','su-confirm-err'].forEach(clearErr);
-  ['su-name','su-email','su-phone','su-role','su-pwd','su-confirm'].forEach(id=>markInp(id,''));
+  ['su-name-err','su-email-err','su-phone-err','su-pwd-err','su-confirm-err'].forEach(clearErr);
+  ['su-name','su-email','su-phone','su-pwd','su-confirm'].forEach(id=>markInp(id,''));
 
   if(!name||name.length<2){ setErr('su-name-err','Enter your full name'); markInp('su-name','err'); valid=false; }
   else markInp('su-name','ok');
@@ -382,8 +368,6 @@ async function doSignUp(e){
   if(!phone){ setErr('su-phone-err','Phone number is required'); markInp('su-phone','err'); valid=false; }
   else if(!validPhone(phone)){ setErr('su-phone-err','Enter a valid 10-digit phone number'); markInp('su-phone','err'); valid=false; }
   else markInp('su-phone','ok');
-  if(!role){ setErr('su-role-err','Please select a role'); markInp('su-role','err'); valid=false; }
-  else markInp('su-role','ok');
   if(!pwd){ setErr('su-pwd-err','Password is required'); markInp('su-pwd','err'); valid=false; }
   else if(!validPwd(pwd)){ setErr('su-pwd-err','Min 8 chars, include a number and symbol'); markInp('su-pwd','err'); valid=false; }
   else markInp('su-pwd','ok');
@@ -399,11 +383,10 @@ async function doSignUp(e){
   btn.disabled = true;
 
   try {
-    const backendRole = role === 'Super Admin' ? 'admin' : 'user';
     const res = await fetch('/api/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password: pwd, role: backendRole })
+      body: JSON.stringify({ email, password: pwd, role: 'user' })
     });
     const data = await res.json();
     if (res.ok) {
@@ -420,7 +403,6 @@ async function doSignUp(e){
     btn.innerHTML = originalText;
     btn.disabled = false;
   }
-};
 }
 
 /* ---------- GOOGLE (DEMO) ---------- */

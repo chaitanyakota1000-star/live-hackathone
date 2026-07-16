@@ -22,7 +22,8 @@ CREATE TABLE snapshots (
     id SERIAL PRIMARY KEY,
     site_id INTEGER REFERENCES sites(id) ON DELETE CASCADE NOT NULL,
     content_hash VARCHAR(64) NOT NULL,
-    raw_content TEXT NOT NULL
+    raw_content TEXT NOT NULL,
+    diff TEXT
 );
 
 CREATE TABLE flags (
