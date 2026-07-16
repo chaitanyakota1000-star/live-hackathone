@@ -831,9 +831,10 @@ async function triggerScanReal(siteId) {
     
     setTimeout(() => {
       overlay.style.display = 'none';
-      progress.style.width  = '0%';
       if (res.ok) {
-        alert("Gemini AI Scan Result:\n\n" + data.ai_analysis);
+        document.getElementById('scan-result-text').textContent = data.ai_analysis;
+        openModal('scan-result-modal');
+        
         // Refresh history if the modal is currently open for this site
         if (document.getElementById('history-modal').classList.contains('open') && window.currentHistorySiteId === siteId) {
           openHistory(siteId, document.getElementById('history-site-name').textContent);
