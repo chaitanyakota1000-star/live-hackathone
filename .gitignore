@@ -1,0 +1,7 @@
+node_modules/
+.env
+*.log
+database/user_html.txt
+database/check_log.js
+database/extract_log.js
+database/find_aegis.js

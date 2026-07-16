@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Siege — AI-Powered Web Security & Monitoring Platform</title>
+    <meta name="description" content="Defacement detection, vulnerability scanning, and AI-driven security assessments.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-mode">
+
+    <!-- Glowing Background blobs -->
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <!-- MAIN CONTAINER -->
+    <main class="app-container">
+
+        <!-- ================= AUTH SECTION ================= -->
+        <section id="auth-section" class="auth-card glassmorphism active">
+            <div class="auth-header">
+                <div class="logo">
+                    <span class="logo-icon">🛡️</span>
+                    <span class="logo-text">SYSTEM<span>SIEGE</span></span>
+                </div>
+                <h1 id="auth-title">Security Gateway</h1>
+                <p id="auth-subtitle">Provide your credentials to access the security command center.</p>
+            </div>
+
+            <!-- Login Form -->
+            <form id="login-form" class="auth-form active">
+                <div class="form-group">
+                    <label for="login-email">Email Address</label>
+                    <input type="email" id="login-email" required placeholder="name@organization.com" autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" required placeholder="••••••••" autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn btn-primary btn-glow">Authenticate Session 🔑</button>
+                <p class="auth-toggle-text">Need an analyst account? <a href="#" id="to-register">Register here</a></p>
+            </form>
+
+            <!-- Register Form -->
+            <form id="register-form" class="auth-form">
+                <div class="form-group">
+                    <label for="reg-email">Email Address</label>
+                    <input type="email" id="reg-email" required placeholder="name@organization.com" autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label for="reg-password">Password</label>
+                    <input type="password" id="reg-password" required placeholder="Min. 6 characters" autocomplete="new-password">
+                </div>
+                <div class="form-group">
+                    <label for="reg-role">Access Authorization Level</label>
+                    <select id="reg-role">
+                        <option value="user">Security Analyst (User Scope)</option>
+                        <option value="admin">Administrator (Org Scope)</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-secondary">Initialize Account 🛡️</button>
+                <p class="auth-toggle-text">Already registered? <a href="#" id="to-login">Access gateway</a></p>
+            </form>
+
+            <!-- Alert Banner inside auth -->
+            <div id="auth-banner" class="banner hide"></div>
+        </section>
+
+
+        <!-- ================= MAIN DASHBOARD SECTION ================= -->
+        <section id="dashboard-section" class="dashboard-grid">
+            
+            <!-- HEADER / COMMAND BAR -->
+            <header class="dashboard-header glassmorphism">
+                <div class="header-left">
+                    <div class="logo">
+                        <span class="logo-icon">🛡️</span>
+                        <span class="logo-text">SYSTEM<span>SIEGE</span></span>
+                        <span class="badge badge-outline" id="user-role-badge">Analyst</span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <span class="user-email" id="header-user-email">analyst@org.com</span>
+                    <button class="btn btn-danger btn-sm" id="logout-btn">Terminate Session 🚪</button>
+                </div>
+            </header>
+
+            <!-- SIDEBAR: SITES & ADD FORM -->
+            <aside class="sidebar-panel glassmorphism">
+                <div class="panel-header">
+                    <h2>Protected Assets</h2>
+                    <p>Central inventory of registered web applications</p>
+                </div>
+
+                <!-- Add website Form -->
+                <form id="add-website-form" class="add-website-form">
+                    <h3>Register New Digital Asset</h3>
+                    <div class="form-group">
+                        <input type="text" id="site-name" required placeholder="App Name (e.g. Corporate Portal)">
+                    </div>
+                    <div class="form-group">
+                        <input type="url" id="site-url" required placeholder="https://example.com">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm btn-glow">Add Asset ➕</button>
+                </form>
+
+                <!-- Website List -->
+                <div class="website-list-container">
+                    <div id="website-list-loading" class="spinner-container hide">
+                        <div class="spinner"></div>
+                        <span>Reading assets...</span>
+                    </div>
+                    <div id="empty-websites" class="empty-state">
+                        <p>No registered web assets.</p>
+                        <span>Add a URL to start monitoring.</span>
+                    </div>
+                    <ul id="website-list" class="website-list">
+                        <!-- Dynamic list items -->
+                    </ul>
+                </div>
+            </aside>
+
+            <!-- MAIN WORKSPACE: SELECTED SITE ASSESSMENT -->
+            <section class="main-assessment-panel glassmorphism">
+                <div id="no-site-selected" class="empty-state active">
+                    <div class="icon">🔍</div>
+                    <h2>No Asset Selected</h2>
+                    <p>Select a monitored website from the left panel to review its integrity status, run manual vulnerability scans, and inspect threat summaries.</p>
+                </div>
+
+                <div id="site-workspace" class="site-workspace hide">
+                    <!-- Site Workspace Header -->
+                    <div class="workspace-header">
+                        <div>
+                            <h1 id="work-site-name">Corporate Portal</h1>
+                            <a href="#" id="work-site-url" target="_blank" rel="noopener noreferrer" class="site-link">https://corp.com</a>
+                        </div>
+                        <div class="workspace-actions">
+                            <button id="scan-now-btn" class="btn btn-primary btn-glow">Trigger Integrity Check ⚡</button>
+                            <button id="delete-site-btn" class="btn btn-danger btn-outline">Delete Asset 🗑️</button>
+                        </div>
+                    </div>
+
+                    <!-- Scan Loading Overlay -->
+                    <div id="scan-loading-overlay" class="scan-loading-overlay hide">
+                        <div class="scanner-effect"></div>
+                        <div class="scan-loader-box glassmorphism">
+                            <div class="pulse-loader"></div>
+                            <h2>Running Multi-Stage Scanner...</h2>
+                            <p>Executing SSRF check, pulling snapshot, verifying encryption headers, and computing structural integrity hash.</p>
+                        </div>
+                    </div>
+
+                    <!-- Grid Layout for Site Status -->
+                    <div class="workspace-grid">
+                        
+                        <!-- Core Status Indicator -->
+                        <div class="status-summary-card glassmorphism">
+                            <h3>Asset Health Integrity</h3>
+                            <div class="health-gauge">
+                                <div class="health-status-glow" id="health-status-glow"></div>
+                                <div class="health-text" id="health-text">PENDING</div>
+                            </div>
+                            <div class="health-stats">
+                                <div class="stat-item">
+                                    <span>Last Scan</span>
+                                    <strong id="stat-last-scan">Never</strong>
+                                </div>
+                                <div class="stat-item">
+                                    <span>Vulnerabilities</span>
+                                    <strong id="stat-vulnerabilities-count">0 Detected</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Defacement snapshot Diff -->
+                        <div class="defacement-card glassmorphism">
+                            <h3>Visual Defacement Monitor</h3>
+                            <div class="similarity-score-box">
+                                <div class="similarity-label">Baseline HTML Similarity Index</div>
+                                <div class="similarity-value" id="similarity-value">--</div>
+                            </div>
+                            <div class="progress-bar-track">
+                                <div class="progress-bar-fill" id="similarity-bar" style="width: 0%;"></div>
+                            </div>
+                            <div id="defacement-verdict" class="defacement-verdict font-mono">
+                                Awaiting initial baseline scan...
+                            </div>
+                        </div>
+
+                        <!-- AI Security intelligence analysis -->
+                        <div class="ai-report-card glassmorphism">
+                            <div class="ai-card-header">
+                                <h3>🧠 AI threat Assessment Brief</h3>
+                                <span class="badge badge-purple">Gemini/OpenAI</span>
+                            </div>
+                            <div class="ai-report-content markdown-body" id="ai-report-content">
+                                <p class="placeholder-text">Run a scan to generate AI mitigation strategies, implications, and threat scoring.</p>
+                            </div>
+                        </div>
+
+                        <!-- Vulnerability Checklist -->
+                        <div class="vulnerabilities-card glassmorphism">
+                            <h3>Security Headers & Encryption Audit</h3>
+                            <div class="vuln-list-wrapper">
+                                <div id="no-vulnerabilities" class="empty-state">
+                                    <div class="checkmark">✅</div>
+                                    <p>Clean configurations detected.</p>
+                                    <span>All default response encryption headers are securely enforced.</span>
+                                </div>
+                                <ul id="vulnerabilities-list" class="vulnerabilities-list">
+                                    <!-- Dynamic vulns -->
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Scan History table -->
+                        <div class="history-card glassmorphism">
+                            <h3>Scan Snapshot History</h3>
+                            <div class="table-container">
+                                <table class="history-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Timestamp</th>
+                                            <th>Risk Level</th>
+                                            <th>Similarity</th>
+                                            <th>Vulnerabilities</th>
+                                            <th>Report</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="scan-history-rows">
+                                        <!-- Dynamic entries -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div> <!-- End workspace-grid -->
+                </div> <!-- End site-workspace -->
+            </section>
+
+            <!-- SUB-PANEL: ALERTS FEED & AUDIT TRAIL -->
+            <section class="footer-control-panel glassmorphism">
+                <div class="footer-grid">
+                    
+                    <!-- Real-Time Alerts -->
+                    <div class="alerts-feed">
+                        <div class="feed-header">
+                            <h3>Active Threat Alerts</h3>
+                            <button id="refresh-alerts" class="btn btn-text">🔄</button>
+                        </div>
+                        <div id="empty-alerts" class="empty-state-sm">
+                            No active threat alerts. System integrity is sound.
+                        </div>
+                        <ul id="alerts-list" class="alerts-list">
+                            <!-- Dynamic Alerts -->
+                        </ul>
+                    </div>
+
+                    <!-- Compliance Audit Trail -->
+                    <div class="audit-trail">
+                        <div class="feed-header">
+                            <h3>Analyst Action Audit Log</h3>
+                            <button id="refresh-audit" class="btn btn-text">🔄</button>
+                        </div>
+                        <div id="empty-audit" class="empty-state-sm">
+                            No actions recorded in log.
+                        </div>
+                        <ul id="audit-list" class="audit-list">
+                            <!-- Dynamic Audit Logs -->
+                        </ul>
+                    </div>
+
+                </div>
+            </section>
+        </section> <!-- End dashboard-section -->
+
+        <!-- ================= DETAILED REPORT MODAL ================= -->
+        <div id="report-modal" class="modal hide">
+            <div class="modal-content glassmorphism">
+                <div class="modal-header">
+                    <h2>AI Vulnerability Assessment Report</h2>
+                    <button class="modal-close" id="modal-close-btn">&times;</button>
+                </div>
+                <div class="modal-body markdown-body" id="modal-report-body">
+                    <!-- Report content -->
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="app-footer">
+        <p>SYSTEM SIEGE Security Monitor • Built for Hackathon PS-005 • AI-powered Defacement Assessment & Audit Logs</p>
+    </footer>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>
