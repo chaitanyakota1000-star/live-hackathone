@@ -6,7 +6,8 @@
    SECTION 0: AUTH GUARD + SESSION
    ============================================================ */
 
-const _jwt = localStorage.getItem('jwt');
+// JWT may live in localStorage (remember me) or sessionStorage (session-only)
+const _jwt = localStorage.getItem('jwt') || sessionStorage.getItem('jwt');
 let _session = null;
 
 // Redirect to login if no session
@@ -63,6 +64,7 @@ function closeProfilePanel() {
 
 function doSignOut() {
   localStorage.removeItem('jwt');
+  sessionStorage.removeItem('jwt');
   window.location.href = 'login.html';
 }
 
@@ -458,28 +460,67 @@ function renderVulns() {
    SECTION 8: RENDER — AUDIT TIMELINE
    ============================================================ */
 
-function renderAudit() {
+async function renderAudit() {
   const el = document.getElementById('audit-timeline');
   if (!el) return;
-
-  el.innerHTML = `<div class="timeline-line"></div>` + AUDIT_LOGS.map(log => `
-    <div class="relative pl-12 pb-5 last:pb-0">
-      <div class="absolute left-0 w-10 h-10 rounded-full flex items-center justify-center z-10"
-           style="background:rgba(15,23,42,0.9);border:2px solid ${log.color}30;box-shadow:0 0 12px ${log.color}20;">
-        <i data-lucide="${log.icon}" class="w-4 h-4" style="color:${log.color};"></i>
-      </div>
-      <div class="card p-3.5">
-        <div class="flex items-center gap-3 flex-wrap mb-1">
-          <span class="text-sm font-semibold text-white">${log.actor}</span>
-          <span class="badge badge-info" style="font-size:9px;">${log.type}</span>
-          <span class="text-xs text-surface-500 font-mono ml-auto">${log.time}</span>
+  try {
+    const res = await fetch('/api/audit', { headers: { 'Authorization': `Bearer ${_jwt}` } });
+    if (!res.ok) throw new Error('API error');
+    const data = await res.json();
+    const logs = data.logs || [];
+    if (logs.length === 0) {
+      el.innerHTML = '<p class="text-surface-500 text-sm p-4">No audit logs yet.</p>';
+      return;
+    }
+    const iconFor = (action) => {
+      if (action.includes('scan'))      return { icon: 'radar',       color: '#f43f5e' };
+      if (action.includes('Deleted'))   return { icon: 'trash-2',     color: '#f97316' };
+      if (action.includes('Logged in')) return { icon: 'log-in',      color: '#06b6d4' };
+      if (action.includes('asset'))     return { icon: 'plus-circle',  color: '#06b6d4' };
+      if (action.includes('Registered'))return { icon: 'user-plus',   color: '#22c55e' };
+      return { icon: 'activity', color: '#64748b' };
+    };
+    el.innerHTML = '<div class="timeline-line"></div>' + logs.map(log => {
+      const { icon, color } = iconFor(log.action);
+      const time = new Date(log.created_at).toLocaleTimeString();
+      return `
+        <div class="relative pl-12 pb-5 last:pb-0">
+          <div class="absolute left-0 w-10 h-10 rounded-full flex items-center justify-center z-10"
+               style="background:rgba(15,23,42,0.9);border:2px solid ${color}30;box-shadow:0 0 12px ${color}20;">
+            <i data-lucide="${icon}" class="w-4 h-4" style="color:${color};"></i>
+          </div>
+          <div class="card p-3.5">
+            <div class="flex items-center gap-3 flex-wrap mb-1">
+              <span class="text-sm font-semibold text-white">${log.user_email}</span>
+              <span class="badge badge-info" style="font-size:9px;">audit</span>
+              <span class="text-xs text-surface-500 font-mono ml-auto">${time}</span>
+            </div>
+            <div class="text-xs text-surface-400">${log.action}</div>
+          </div>
+        </div>`;
+    }).join('');
+    lucide.createIcons();
+  } catch (err) {
+    console.error('Failed to load audit logs:', err);
+    el.innerHTML = '<div class="timeline-line"></div>' + AUDIT_LOGS.map(log => `
+      <div class="relative pl-12 pb-5 last:pb-0">
+        <div class="absolute left-0 w-10 h-10 rounded-full flex items-center justify-center z-10"
+             style="background:rgba(15,23,42,0.9);border:2px solid ${log.color}30;">
+          <i data-lucide="${log.icon}" class="w-4 h-4" style="color:${log.color};"></i>
         </div>
-        <div class="text-xs text-surface-400">${log.action}</div>
-      </div>
-    </div>`).join('');
-
-  lucide.createIcons();
+        <div class="card p-3.5">
+          <div class="flex items-center gap-3 flex-wrap mb-1">
+            <span class="text-sm font-semibold text-white">${log.actor}</span>
+            <span class="badge badge-info" style="font-size:9px;">${log.type}</span>
+            <span class="text-xs text-surface-500 font-mono ml-auto">${log.time}</span>
+          </div>
+          <div class="text-xs text-surface-400">${log.action}</div>
+        </div>
+      </div>`).join('');
+    lucide.createIcons();
+  }
 }
+
 
 /* ============================================================
    SECTION 9: RENDER — USERS TABLE
@@ -669,61 +710,130 @@ function initCharts() {
    SECTION 12: SCAN OVERLAY ANIMATION
    ============================================================ */
 
+/* ============================================================
+   SECTION 12: SCAN OVERLAY ANIMATION
+   ============================================================ */
+
+// Topbar "Scan Now" button — scans all assets in sequence
+async function triggerScan() {
+  if (ASSETS.length === 0) {
+    alert('No assets to scan. Please add some assets first.');
+    return;
+  }
+  const overlay  = document.getElementById('scan-overlay');
+  const progress = document.getElementById('scan-progress');
+  const status   = document.getElementById('scan-status');
+  overlay.style.display = 'flex';
+  let scannedCount = 0;
+  const totalAssets = ASSETS.length;
+  try {
+    for (const asset of ASSETS) {
+      try {
+        status.textContent = `Scanning ${asset.name || asset.url}...`;
+        const res = await fetch(`/api/sites/${asset.id}/check`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${_jwt}` }
+        });
+        if (res.ok) scannedCount++;
+      } catch (err) {
+        console.error(`Failed to scan asset ${asset.id}:`, err);
+      }
+      progress.style.width = `${Math.round(((scannedCount + 1) / totalAssets) * 100)}%`;
+    }
+    progress.style.width = '100%';
+    status.textContent = `Scan complete — ${scannedCount}/${totalAssets} assets scanned`;
+    setTimeout(() => {
+      overlay.style.display = 'none';
+      progress.style.width = '0%';
+      alert(`Bulk scan complete: ${scannedCount}/${totalAssets} assets scanned.`);
+      fetchAssets();
+    }, 1500);
+  } catch (err) {
+    overlay.style.display = 'none';
+    progress.style.width = '0%';
+    alert('Bulk scan failed. Please try again.');
+  }
+}
+
+// Per-asset "Check" button
 async function triggerScanReal(siteId) {
   const overlay  = document.getElementById('scan-overlay');
   const progress = document.getElementById('scan-progress');
   const status   = document.getElementById('scan-status');
-
   overlay.style.display = 'flex';
-  
   const msgs = [
     'Initializing AI security scan...',
-    'Authenticating with asset endpoints...',
-    'Capturing DOM snapshots...',
-    'Running defacement detection algorithms...',
-    'Analyzing SSL/TLS configurations...',
-    'Checking security headers...',
-    'Cross-referencing CVE database...',
-    'Running behavioral analysis...',
+    'Fetching live website content...',
+    'Comparing against baseline snapshot...',
+    'Running defacement detection...',
     'Generating AI threat assessment...',
     'Scan complete — compiling report...',
   ];
-
   let pct = 0;
   const interval = setInterval(() => {
-    pct = Math.min(pct + 5, 95); // wait for API
+    pct = Math.min(pct + 6, 92);
     progress.style.width = pct + '%';
-    status.textContent   = msgs[Math.floor((pct/100) * msgs.length)] || msgs[msgs.length - 1];
+    status.textContent = msgs[Math.floor((pct / 100) * msgs.length)] || msgs[msgs.length - 1];
   }, 500);
-
   try {
     const res = await fetch(`/api/sites/${siteId}/check`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${_jwt}` }
     });
-    
     clearInterval(interval);
     progress.style.width = '100%';
     status.textContent = 'Scan complete — displaying result...';
-    
     const data = await res.json();
-    
     setTimeout(() => {
       overlay.style.display = 'none';
-      progress.style.width  = '0%';
-      if (res.ok) {
-        alert("Gemini AI Scan Result:\n\n" + data.ai_analysis);
-      } else {
-        alert(data.message || data.error || 'Scan failed');
-      }
-    }, 1000);
-    
-  } catch(err) {
+      progress.style.width = '0%';
+      if (res.ok) showScanResultModal(data);
+      else alert(data.error || data.message || 'Scan failed');
+    }, 800);
+  } catch (err) {
     clearInterval(interval);
     overlay.style.display = 'none';
-    progress.style.width  = '0%';
+    progress.style.width = '0%';
     alert('Network error while scanning.');
   }
+}
+
+function showScanResultModal(scanData) {
+  const existing = document.getElementById('scan-result-modal');
+  if (existing) existing.remove();
+  const metrics = scanData.scan_metrics || {};
+  const riskColor = metrics.riskLevel === 'critical' ? '#f43f5e' :
+                    metrics.riskLevel === 'high'     ? '#f97316' :
+                    metrics.riskLevel === 'medium'   ? '#eab308' : '#22c55e';
+  const defacedBadge = metrics.isDefaced
+    ? '<span class="badge badge-critical">Defacement Detected</span>'
+    : '<span class="badge badge-ok">No Defacement</span>';
+  const modal = document.createElement('div');
+  modal.id = 'scan-result-modal';
+  modal.className = 'modal';
+  modal.style.display = 'flex';
+  modal.innerHTML = `
+    <div class="modal-content" style="max-width:600px;">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-white">AI Scan Results</h3>
+        <button onclick="document.getElementById('scan-result-modal').remove()" class="text-surface-500 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="grid grid-cols-3 gap-3 mb-4">
+        <div class="card p-3 text-center"><div class="text-xs text-surface-500 mb-1">Status</div>${defacedBadge}</div>
+        <div class="card p-3 text-center"><div class="text-xs text-surface-500 mb-1">Risk Level</div><div class="font-bold text-sm" style="color:${riskColor};">${(metrics.riskLevel || 'unknown').toUpperCase()}</div></div>
+        <div class="card p-3 text-center"><div class="text-xs text-surface-500 mb-1">Similarity</div><div class="font-bold text-sm text-white">${metrics.similarityScore ?? 100}%</div></div>
+      </div>
+      <div class="card p-4 mb-4" style="max-height:280px;overflow-y:auto;">
+        <div class="text-xs text-surface-500 mb-2">AI Analysis</div>
+        <div class="text-sm text-surface-300 leading-relaxed" style="white-space:pre-wrap;">${scanData.ai_analysis || 'No analysis available.'}</div>
+      </div>
+      <div class="text-xs text-surface-500 mb-4">Changes: ${scanData.diff_summary || 'None'} &nbsp;|&nbsp; Hash: <span class="font-mono">${scanData.content_hash || '—'}</span></div>
+      <button onclick="document.getElementById('scan-result-modal').remove()" class="btn-secondary w-full">Close</button>
+    </div>`;
+  document.body.appendChild(modal);
+  lucide.createIcons();
 }
 
 /* ============================================================

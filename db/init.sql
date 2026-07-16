@@ -48,6 +48,7 @@ CREATE TABLE alerts (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Seed an operational user and site item so the dashboard has elements to interact with immediately
-INSERT INTO users (email, password_hash, role) VALUES ('admin@siege.local', 'stub_hash', 'admin');
+-- Seed an operational admin user. Password: Admin@Siege1 (bcrypt, cost 12).
+-- Change this password immediately after first login in any non-development environment.
+INSERT INTO users (email, password_hash, role) VALUES ('admin@siege.local', '$2b$12$5ppnY0l1uyacpiYgI8DTTe1KOSjDaBOu8JgTgZKck15wrux/NQiGq', 'admin');
 INSERT INTO sites (owner_id, url) VALUES (1, 'https://enterprise-panel.net');

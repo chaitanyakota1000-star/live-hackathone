@@ -212,19 +212,6 @@ select.inp{padding-left:14px}
           <div class="errmsg" id="su-phone-err"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg><span></span></div>
         </div>
 
-        <!-- Role -->
-        <div class="mb-4">
-          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Role</label>
-          <div class="relative">
-            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            <select id="su-role" class="inp" style="padding-left:42px">
-              <option value="">Select your role</option>
-              <option>Super Admin</option><option>Security Analyst</option><option>Operator</option><option>Read-Only</option>
-            </select>
-          </div>
-          <div class="errmsg" id="su-role-err"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg><span></span></div>
-        </div>
-
         <!-- Password -->
         <div class="mb-2">
           <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Password</label>
@@ -258,6 +245,7 @@ select.inp{padding-left:14px}
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
           Create Account
         </button>
+        <div id="su-global-err" class="mt-3 text-xs text-red-400 text-center hidden"></div>
       </form>
 
     </div><!-- /glass card -->
@@ -325,8 +313,9 @@ async function doSignIn(e){
   else if(!validEmail(email)){ setErr('si-email-err','Enter a valid email address'); markInp('si-email','err'); valid=false; }
   else markInp('si-email','ok');
 
+  // Match server-side requirement: password must meet the same 8-char minimum as signup
   if(!pwd){ setErr('si-pwd-err','Password is required'); markInp('si-pwd','err'); valid=false; }
-  else if(pwd.length<6){ setErr('si-pwd-err','Password must be at least 6 characters'); markInp('si-pwd','err'); valid=false; }
+  else if(pwd.length<8){ setErr('si-pwd-err','Password must be at least 8 characters'); markInp('si-pwd','err'); valid=false; }
   else markInp('si-pwd','ok');
 
   if(!valid) return;
@@ -336,15 +325,24 @@ async function doSignIn(e){
   btn.innerHTML = 'Authenticating...';
   btn.disabled = true;
 
+  // Honor "Remember me" — extend JWT lifetime on the client side by storing a flag;
+  // the server will always issue a 12h token, but we persist a reminder so the
+  // auth guard knows to keep the session alive for 30 days via sessionStorage vs localStorage.
+  const remember = document.getElementById('remember').checked;
+  const storage = remember ? localStorage : sessionStorage;
+
   try {
     const res = await fetch('/api/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password: pwd })
+      body: JSON.stringify({ email, password: pwd, rememberMe: remember })
     });
     const data = await res.json();
     if (res.ok) {
-      localStorage.setItem('jwt', data.token);
+      // Store in the appropriate storage based on "remember me"
+      localStorage.removeItem('jwt');
+      sessionStorage.removeItem('jwt');
+      storage.setItem('jwt', data.token);
       window.location.href = 'index.html';
     } else {
       const errEl = document.getElementById('si-global-err');
@@ -360,30 +358,30 @@ async function doSignIn(e){
     btn.innerHTML = originalText;
     btn.disabled = false;
   }
-}/* ---------- SIGN UP ---------- */
+}
+
+/* ---------- SIGN UP ---------- */
 async function doSignUp(e){
   e.preventDefault();
   let valid=true;
   const name=document.getElementById('su-name').value.trim();
   const email=document.getElementById('su-email').value.trim();
   const phone=document.getElementById('su-phone').value.trim();
-  const role=document.getElementById('su-role').value;
   const pwd=document.getElementById('su-pwd').value;
   const confirm=document.getElementById('su-confirm').value;
 
-  ['su-name-err','su-email-err','su-phone-err','su-role-err','su-pwd-err','su-confirm-err'].forEach(clearErr);
-  ['su-name','su-email','su-phone','su-role','su-pwd','su-confirm'].forEach(id=>markInp(id,''));
+  // Clear all previous errors first, then validate
+  ['su-name-err','su-email-err','su-phone-err','su-pwd-err','su-confirm-err'].forEach(clearErr);
+  ['su-name','su-email','su-phone','su-pwd','su-confirm'].forEach(id=>markInp(id,''));
 
   if(!name||name.length<2){ setErr('su-name-err','Enter your full name'); markInp('su-name','err'); valid=false; }
   else markInp('su-name','ok');
   if(!email){ setErr('su-email-err','Email is required'); markInp('su-email','err'); valid=false; }
-  else if(!validEmail(email)){ setErr('su-email-err','Enter a valid email address'); markInp('si-email','err'); valid=false; }
+  else if(!validEmail(email)){ setErr('su-email-err','Enter a valid email address'); markInp('su-email','err'); valid=false; }
   else markInp('su-email','ok');
   if(!phone){ setErr('su-phone-err','Phone number is required'); markInp('su-phone','err'); valid=false; }
   else if(!validPhone(phone)){ setErr('su-phone-err','Enter a valid 10-digit phone number'); markInp('su-phone','err'); valid=false; }
   else markInp('su-phone','ok');
-  if(!role){ setErr('su-role-err','Please select a role'); markInp('su-role','err'); valid=false; }
-  else markInp('su-role','ok');
   if(!pwd){ setErr('su-pwd-err','Password is required'); markInp('su-pwd','err'); valid=false; }
   else if(!validPwd(pwd)){ setErr('su-pwd-err','Min 8 chars, include a number and symbol'); markInp('su-pwd','err'); valid=false; }
   else markInp('su-pwd','ok');
@@ -392,27 +390,38 @@ async function doSignUp(e){
   else markInp('su-confirm','ok');
 
   if(!valid) return;
-  
+
   const btn = e.target.querySelector('button[type="submit"]');
   const originalText = btn.innerHTML;
   btn.innerHTML = 'Registering...';
   btn.disabled = true;
 
   try {
-    const backendRole = role === 'Super Admin' ? 'admin' : 'user';
+    // Phone is collected for UX but the /register endpoint only requires email + password.
+    // Role is always assigned server-side; never send a client-supplied role.
     const res = await fetch('/api/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password: pwd, role: backendRole })
+      body: JSON.stringify({ email, password: pwd })
     });
     const data = await res.json();
     if (res.ok) {
-      alert("Registration successful! Please login.");
+      // Switch to sign-in tab and pre-fill email for a smooth UX
       switchTab('si');
       document.getElementById('si-email').value = email;
-      document.getElementById('si-pwd').value = pwd;
+      document.getElementById('si-pwd').value = '';
+      const errEl = document.getElementById('si-global-err');
+      errEl.textContent = '';
+      errEl.classList.add('hidden');
+      // Show a subtle success message in the sign-in form area
+      const successEl = document.getElementById('si-global-err');
+      successEl.style.color = '#4ade80';
+      successEl.textContent = 'Account created! Please sign in.';
+      successEl.classList.remove('hidden');
     } else {
-      alert(data.message || 'Registration failed');
+      const suErr = document.getElementById('su-global-err');
+      if(suErr){ suErr.textContent = data.message || 'Registration failed'; suErr.classList.remove('hidden'); }
+      else { alert(data.message || 'Registration failed'); }
     }
   } catch(err) {
     alert('Network error. Please check your connection.');
@@ -420,8 +429,8 @@ async function doSignUp(e){
     btn.innerHTML = originalText;
     btn.disabled = false;
   }
-};
 }
+
 
 /* ---------- GOOGLE (DEMO) ---------- */
 function doGoogle(){
