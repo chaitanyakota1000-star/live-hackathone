@@ -49,8 +49,14 @@ initDb();
 db.query('ALTER TABLE snapshots ADD COLUMN IF NOT EXISTS diff TEXT')
   .catch(err => console.error("Auto-migration failed (this is usually safe to ignore):", err.message));
 
-// 2. Initialize the Google Gen AI Client
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+// 2. We will initialize GoogleGenAI at runtime so the server doesn't crash if the key is missing on boot
+let aiClient = null;
+function getAiClient() {
+  if (!aiClient) {
+    aiClient = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  }
+  return aiClient;
+}
 
 // ==========================================
 // MIDDLEWARE: JWT Authentication
@@ -281,7 +287,10 @@ router.post('/sites/:id/check', authMiddleware, async (req, res, next) => {
 
     await logAuditTrail(userId, `Triggered manual security scan for site ID ${siteId}`);
 
-    const targetUrl = website.url;
+    let targetUrl = website.url;
+    if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
+      targetUrl = 'https://' + targetUrl;
+    }
 
     // B. Fetch live content
     let fetchRes;
@@ -341,6 +350,7 @@ router.post('/sites/:id/check', authMiddleware, async (req, res, next) => {
     // F. Gemini AI Invocation
     let aiOutput;
     try {
+      const ai = getAiClient();
       const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
         contents: dynamicPrompt,

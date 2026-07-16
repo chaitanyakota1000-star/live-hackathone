@@ -846,10 +846,11 @@ async function triggerScanReal(siteId) {
     }, 1000);
     
   } catch(err) {
+    console.error("Scan Network Error:", err);
     clearInterval(interval);
     overlay.style.display = 'none';
     progress.style.width  = '0%';
-    alert('Network error while scanning.');
+    alert('Network error while scanning. Check console for details.');
   }
 }
 
