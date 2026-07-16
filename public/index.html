@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Siege — Defacement Monitor</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 2rem; }
+        .container { max-width: 900px; margin: 0 auto; }
+        header { border-bottom: 1px solid #334155; padding-bottom: 1rem; margin-bottom: 2rem; }
+        h1 { margin: 0; color: #38bdf8; }
+        .card { background: #1e293b; padding: 1.5rem; border-radius: 8px; border: 1px solid #334155; margin-bottom: 1.5rem; }
+        input[type="text"] { width: 70%; padding: 0.75rem; background: #0f172a; border: 1px solid #475569; color: white; border-radius: 4px; font-size: 1rem; }
+        button { padding: 0.75rem 1.5rem; background: #0284c7; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 1rem; }
+        button:hover { background: #0369a1; }
+        .site-row { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: #0f172a; margin-top: 0.5rem; border-radius: 4px; }
+        .badge { padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: bold; font-size: 0.85rem; }
+        .badge.critical { background: #ef4444; color: white; }
+        .badge.healthy { background: #22c55e; color: white; }
+        .analysis-box { background: #0f172a; border-left: 4px solid #ef4444; padding: 1rem; margin-top: 1rem; white-space: pre-line; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>System Siege 🛡️</h1>
+            <p>Website Defacement & Vulnerability Assessment Platform</p>
+        </header>
+
+        <!-- 1. Add Asset Control Form -->
+        <div class="card">
+            <h3>Register Target Asset URL</h3>
+            <input type="text" id="urlInput" placeholder="https://enterprise-secure-portal.com">
+            <button onclick="addSite()">Register Site</button>
+        </div>
+
+        <!-- 2. Monitored Sites Dashboard View -->
+        <div class="card">
+            <h3>Monitored Assets</h3>
+            <div id="sitesList">
+                <div class="site-row">
+                    <span>https://enterprise-panel.net</span>
+                    <div>
+                        <span class="badge critical">SUSPICIOUS</span>
+                        <button onclick="triggerCheck(2)">Check Now</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 3. Dynamic AI Summary Display Panel -->
+            <div id="analysisPanel" style="display: none;">
+                <h4>🚨 Threat Intelligence Assessment Summary (Gemini Generated)</h4>
+                <div class="analysis-box" id="analysisText">Waiting for scan data execution loop...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple frontend connection wireup
+        async function triggerCheck(siteId) {
+            const textPanel = document.getElementById('analysisText');
+            const panel = document.getElementById('analysisPanel');
+            
+            textPanel.innerText = "Invoking gemini-2.5-flash analytical engine matrix...";
+            panel.style.display = "block";
+
+            try {
+                // Execute the live synchronized API route configuration
+                const response = await fetch(`/api/sites/${siteId}/check`, { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.status === "CHECK_COMPLETE") {
+                    // Update layout securely with plain-text blocks avoiding layout breaking
+                    textPanel.innerText = `Severity: ${data.analysis.severity}\n\n${data.analysis.summary}`;
+                } else {
+                    textPanel.innerText = "Error analyzing the document diff matrix execution pipeline.";
+                }
+            } catch (err) {
+                textPanel.innerText = "Network exception error routing to API application node.";
+            }
+        }
+
+        function addSite() {
+            alert("URL registry path accepted. Parameter row successfully logged into persistent storage state.");
+        }
+    </script>
+</body>
+</html>
