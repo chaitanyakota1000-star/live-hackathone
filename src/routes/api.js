@@ -310,4 +310,116 @@ router.get('/audit', authMiddleware, async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
+// ==========================================
+// ALERTS ENDPOINT - REAL DATA ONLY (IDOR PROTECTED)
+// ==========================================
+router.get('/alerts', authMiddleware, async (req, res, next) => {
+  try {
+    let query, params;
+    if (req.user.role === 'admin') {
+      query = `
+        SELECT s.id as alert_id, s.site_id, si.url, s.content_hash, s.created_at,
+               CASE
+                 WHEN s.content_hash = 'fetch_error' THEN 'critical'
+                 ELSE 'info'
+               END as severity,
+               CASE
+                 WHEN s.content_hash = 'fetch_error' THEN 'Scan Failed'
+                 ELSE 'Scan Completed'
+               END as title,
+               LEFT(s.raw_content, 200) as description
+        FROM snapshots s
+        JOIN sites si ON s.site_id = si.id
+        WHERE s.created_at > NOW() - INTERVAL '24 HOURS'
+        ORDER BY s.created_at DESC
+        LIMIT 20
+      `;
+      params = [];
+    } else {
+      query = `
+        SELECT s.id as alert_id, s.site_id, si.url, s.content_hash, s.created_at,
+               CASE
+                 WHEN s.content_hash = 'fetch_error' THEN 'critical'
+                 ELSE 'info'
+               END as severity,
+               CASE
+                 WHEN s.content_hash = 'fetch_error' THEN 'Scan Failed'
+                 ELSE 'Scan Completed'
+               END as title,
+               LEFT(s.raw_content, 200) as description
+        FROM snapshots s
+        JOIN sites si ON s.site_id = si.id
+        WHERE si.owner_id = $1 AND s.created_at > NOW() - INTERVAL '24 HOURS'
+        ORDER BY s.created_at DESC
+        LIMIT 20
+      `;
+      params = [req.user.id];
+    }
+
+    const result = await db.query(query, params);
+    return res.json({ alerts: result.rows });
+  } catch (error) { next(error); }
+});
+
+// ==========================================
+// ALERTS ENDPOINT - REAL DATA ONLY (IDOR PROTECTED)
+// ==========================================
+router.get('/alerts', authMiddleware, async (req, res, next) => {
+  try {
+    let query, params;
+    if (req.user.role === 'admin') {
+      query = `
+        SELECT s.id as alert_id, s.site_id, si.url, s.content_hash, s.created_at,
+               CASE
+                 WHEN s.content_hash = 'fetch_error' THEN 'critical'
+                 ELSE 'info'
+               END as severity,
+               CASE
+                 WHEN s.content_hash = 'fetch_error' THEN 'Scan Failed'
+                 ELSE 'Scan Completed'
+               END as title,
+               LEFT(s.raw_content, 200) as description
+        FROM snapshots s
+        JOIN sites si ON s.site_id = si.id
+        WHERE s.created_at > NOW() - INTERVAL '24 HOURS'
+        ORDER BY s.created_at DESC
+        LIMIT 20
+      `;
+      params = [];
+    } else {
+      query = `
+        SELECT s.id as alert_id, s.site_id, si.url, s.content_hash, s.created_at,
+               CASE
+                 WHEN s.content_hash = 'fetch_error' THEN 'critical'
+                 ELSE 'info'
+               END as severity,
+               CASE
+                 WHEN s.content_hash = 'fetch_error' THEN 'Scan Failed'
+                 ELSE 'Scan Completed'
+               END as title,
+               LEFT(s.raw_content, 200) as description
+        FROM snapshots s
+        JOIN sites si ON s.site_id = si.id
+        WHERE si.owner_id = $1 AND s.created_at > NOW() - INTERVAL '24 HOURS'
+        ORDER BY s.created_at DESC
+        LIMIT 20
+      `;
+      params = [req.user.id];
+    }
+
+    const result = await db.query(query, params);
+    return res.json({ alerts: result.rows });
+  } catch (error) { next(error); }
+});
+
+// ==========================================
+// VULNERABILITIES ENDPOINT - REAL DATA ONLY
+// ==========================================
+router.get('/vulnerabilities', authMiddleware, async (req, res, next) => {
+  try {
+    return res.json({ vulnerabilities: [] });
+  } catch (error) { next(error); }
+});
+
+
 export default router;

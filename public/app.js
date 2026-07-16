@@ -69,102 +69,11 @@ function doSignOut() {
 }
 
 /* ============================================================
-   SECTION 1: DATA
+   SECTION 1: DATA - REAL API CALLS ONLY
    ============================================================ */
 
-const ALERTS = [
-  {
-    id: 'INC-2847', title: 'Website Defacement Detected',
-    asset: 'api.shopfront.com', severity: 'critical', status: 'open', time: '2 min ago',
-    desc: 'Homepage HTML structure changed by 34%. Possible content injection attack.',
-    ai: 'Attacker injected script tags and modified visible content. Recommend immediate rollback and forensic analysis.'
-  },
-  {
-    id: 'INC-2846', title: 'SQL Injection Attack Blocked',
-    asset: 'portal.fintech.io', severity: 'high', status: 'investigating', time: '18 min ago',
-    desc: '47 SQL injection attempts blocked in 5 minutes from IP 185.220.101.45.',
-    ai: 'Coordinated automated attack. IP belongs to known Tor exit node. Recommend permanent block.'
-  },
-  {
-    id: 'INC-2845', title: 'Unusual Bot Traffic Spike',
-    asset: 'www.healthportal.org', severity: 'medium', status: 'open', time: '1 hr ago',
-    desc: 'Request rate 340% above baseline. Possible DDoS reconnaissance.',
-    ai: 'Traffic pattern consistent with credential stuffing preparation. Enable rate limiting.'
-  },
-  {
-    id: 'INC-2844', title: 'SSL Certificate Near Expiry',
-    asset: 'legacy.govdata.net', severity: 'medium', status: 'open', time: '3 hr ago',
-    desc: 'SSL certificate expires in 8 days. Service disruption imminent if not renewed.',
-    ai: "Auto-renewal appears disabled. Contact certificate authority or enable Let's Encrypt."
-  },
-  {
-    id: 'INC-2843', title: 'Admin Panel Bruteforce Attempt',
-    asset: 'admin.internal.io', severity: 'high', status: 'open', time: '4 hr ago',
-    desc: '230 failed login attempts from 3 IPs in 10 minutes.',
-    ai: 'Brute force pattern detected. Implement account lockout, enable MFA, geo-block suspicious IPs.'
-  },
-  {
-    id: 'INC-2842', title: 'New Vulnerability: CVE-2025-3841',
-    asset: 'Multiple (3 assets)', severity: 'critical', status: 'open', time: '6 hr ago',
-    desc: 'Critical XSS vulnerability in login form affecting 3 monitored assets.',
-    ai: 'Patch available. Upgrade frontend validation library to v3.2.1 or later.'
-  },
-  {
-    id: 'INC-2841', title: 'Security Header Misconfiguration',
-    asset: 'staging.devteam.app', severity: 'low', status: 'resolved', time: '1 day ago',
-    desc: 'Missing HSTS, CSP, and X-Frame-Options headers on staging environment.',
-    ai: 'Fixed by adding headers to nginx.conf. Verify across all environments.'
-  },
-];
+// No hardcoded arrays - all data loaded from real API endpoints
 
-const VULNS = [
-  { id: 'CVE-2025-3841',  name: 'Cross-Site Scripting (XSS)', asset: 'api.shopfront.com',    cvss: 9.1, severity: 'critical', priority: 'P0', status: 'open' },
-  { id: 'CVE-2025-4190',  name: 'SQL Injection',               asset: 'portal.fintech.io',    cvss: 7.8, severity: 'high',     priority: 'P1', status: 'open' },
-  { id: 'CVE-2024-8821',  name: 'Path Traversal',              asset: 'admin.internal.io',    cvss: 7.2, severity: 'high',     priority: 'P1', status: 'investigating' },
-  { id: 'CVE-2025-1122',  name: 'Remote Code Execution',       asset: 'api.mobileapp.dev',    cvss: 9.8, severity: 'critical', priority: 'P0', status: 'open' },
-  { id: 'CVE-2024-9934',  name: 'SSRF Vulnerability',          asset: 'portal.fintech.io',    cvss: 8.1, severity: 'high',     priority: 'P1', status: 'open' },
-  { id: 'MISCONFIG-022',  name: 'Missing Security Headers',    asset: 'staging.devteam.app',  cvss: 5.8, severity: 'medium',   priority: 'P2', status: 'resolved' },
-  { id: 'TLS-WEAK-001',   name: 'Weak TLS Configuration',      asset: 'legacy.govdata.net',   cvss: 5.5, severity: 'medium',   priority: 'P2', status: 'open' },
-  { id: 'INFO-LEAK-008',  name: 'Server Version Disclosure',   asset: 'Multiple',             cvss: 3.1, severity: 'low',      priority: 'P3', status: 'open' },
-];
-
-const AUDIT_LOGS = [
-  { actor: 'Abhijith Kasyap', action: 'Triggered emergency scan on all assets',                             type: 'security',    time: '14:04:33', icon: 'radar',         color: '#f43f5e' },
-  { actor: 'AI Engine',       action: 'Defacement detected on api.shopfront.com — Alert INC-2847 created',  type: 'security',    time: '14:02:14', icon: 'zap',           color: '#f43f5e' },
-  { actor: 'System',          action: 'Scheduled scan completed — 12/12 assets scanned',                    type: 'system',      time: '14:00:01', icon: 'check-circle',  color: '#22c55e' },
-  { actor: 'Priya Sharma',    action: 'Updated role: James Wilson → Security Analyst',                      type: 'access',      time: '13:45:22', icon: 'user-check',    color: '#06b6d4' },
-  { actor: 'AI Engine',       action: 'CVE-2025-3841 matched against 3 monitored assets',                   type: 'security',    time: '13:30:11', icon: 'brain-circuit', color: '#a78bfa' },
-  { actor: 'Abhijith Kasyap', action: 'Added asset: cdn.globalassets.net to monitoring',                    type: 'config',      time: '12:55:04', icon: 'plus-circle',   color: '#06b6d4' },
-  { actor: 'System',          action: 'SOC 2 compliance report auto-generated',                              type: 'compliance',  time: '12:00:00', icon: 'file-check-2',  color: '#7c3aed' },
-  { actor: 'James Wilson',    action: 'Exported vulnerability report (PDF)',                                 type: 'access',      time: '11:34:17', icon: 'download',      color: '#64748b' },
-  { actor: 'Priya Sharma',    action: 'Dismissed alert INC-2839 as false positive',                         type: 'security',    time: '11:10:09', icon: 'x-circle',      color: '#f59e0b' },
-  { actor: 'System',          action: 'INC-2841 auto-resolved: headers now present after deploy',           type: 'system',      time: '10:45:00', icon: 'shield-check',  color: '#22c55e' },
-];
-
-const USERS = [
-  { name: 'Abhijith Kasyap',     email: 'a.kasyap@company.com',    role: 'Super Admin',       status: 'active',   lastActive: 'Now',        mfa: true,  avatar: 'AK', color: 'linear-gradient(135deg, #0891b2, #7c3aed)' },
-  { name: 'Priya Sharma',        email: 'p.sharma@company.com',    role: 'Super Admin',       status: 'active',   lastActive: '5 min ago',  mfa: true,  avatar: 'PS', color: 'linear-gradient(135deg, #7c3aed, #ec4899)' },
-  { name: 'James Wilson',        email: 'j.wilson@company.com',    role: 'Security Analyst',  status: 'active',   lastActive: '1 hr ago',   mfa: true,  avatar: 'JW', color: 'linear-gradient(135deg, #0891b2, #06b6d4)' },
-  { name: 'Sarah Chen',          email: 's.chen@company.com',      role: 'Security Analyst',  status: 'active',   lastActive: '2 hr ago',   mfa: false, avatar: 'SC', color: 'linear-gradient(135deg, #059669, #06b6d4)' },
-  { name: 'Mohammed Al-Rashid',  email: 'm.alrashid@company.com',  role: 'Security Analyst',  status: 'active',   lastActive: '4 hr ago',   mfa: true,  avatar: 'MA', color: 'linear-gradient(135deg, #d97706, #dc2626)' },
-  { name: 'Lisa Park',           email: 'l.park@company.com',      role: 'Operator',          status: 'active',   lastActive: '1 day ago',  mfa: true,  avatar: 'LP', color: 'linear-gradient(135deg, #7c3aed, #06b6d4)' },
-  { name: 'Tom Bradley',         email: 't.bradley@company.com',   role: 'Read-Only',         status: 'inactive', lastActive: '5 days ago', mfa: false, avatar: 'TB', color: 'linear-gradient(135deg, #475569, #334155)' },
-];
-
-const MONITOR_EVENTS = [
-  { t: '14:04:33', msg: '[ALERT] Defacement confirmed on api.shopfront.com',         color: '#f43f5e' },
-  { t: '14:04:12', msg: '[SCAN]  Snapshot diff analysis complete — 34% change',      color: '#f97316' },
-  { t: '14:03:55', msg: '[AI]    Content injection pattern detected (confidence: 96%)', color: '#a78bfa' },
-  { t: '14:02:14', msg: '[DETECT] Unauthorized DOM modification detected',            color: '#f43f5e' },
-  { t: '14:02:01', msg: '[SCAN]  Snapshot taken: api.shopfront.com/index.html',      color: '#94a3b8' },
-  { t: '14:00:01', msg: '[SCAN]  Scheduled scan started — 12 assets queued',         color: '#06b6d4' },
-  { t: '13:59:44', msg: '[OK]    portal.fintech.io — No changes detected',            color: '#22c55e' },
-  { t: '13:59:31', msg: '[OK]    www.healthportal.org — No changes detected',         color: '#22c55e' },
-  { t: '13:55:22', msg: '[OK]    legacy.govdata.net — No changes detected',           color: '#22c55e' },
-  { t: '13:50:11', msg: '[BLOCK] 47 SQLi attempts blocked from 185.220.101.45',      color: '#f97316' },
-  { t: '13:45:00', msg: '[OK]    admin.internal.io — No changes detected',            color: '#22c55e' },
-  { t: '13:40:00', msg: '[OK]    shop.retailhub.net — No changes detected',           color: '#22c55e' },
-];
 
 /* ============================================================
    SECTION 2: NAVIGATION
@@ -363,98 +272,97 @@ async function addAssetReal() {
    SECTION 6: RENDER — ALERTS LIST
    ============================================================ */
 
-function renderAlerts() {
+async function renderAlerts() {
   const el = document.getElementById('alerts-list');
   if (!el) return;
 
-  const sevMap = {
-    critical: { badge: 'badge-critical', icon: 'zap',           bg: 'rgba(244,63,94,0.12)',  color: '#f43f5e' },
-    high:     { badge: 'badge-high',     icon: 'triangle-alert', bg: 'rgba(249,115,22,0.12)', color: '#f97316' },
-    medium:   { badge: 'badge-medium',   icon: 'info',           bg: 'rgba(234,179,8,0.12)',  color: '#eab308' },
-    low:      { badge: 'badge-low',      icon: 'check-circle',   bg: 'rgba(34,197,94,0.12)',  color: '#22c55e' },
-  };
+  try {
+    const res = await fetch('/api/alerts', {
+      headers: { 'Authorization': `Bearer ${_jwt}` }
+    });
 
-  const statusBadge = {
-    open:          '<span class="badge badge-critical"  style="font-size:10px;">Open</span>',
-    investigating: '<span class="badge badge-medium"    style="font-size:10px;">Investigating</span>',
-    resolved:      '<span class="badge badge-ok"        style="font-size:10px;">Resolved</span>',
-  };
+    if (!res.ok) {
+      el.innerHTML = '<div class="p-5 text-center text-surface-400">Failed to load alerts</div>';
+      return;
+    }
 
-  el.innerHTML = ALERTS.map(a => {
-    const s = sevMap[a.severity];
-    const actionBtn = a.status !== 'resolved'
-      ? `<button class="btn-primary  text-xs py-1.5 px-3">Investigate</button>`
-      : `<button class="btn-secondary text-xs py-1.5 px-3">View</button>`;
+    const data = await res.json();
+    const alerts = data.alerts || [];
 
-    return `
-      <div class="p-5 hover:bg-surface-900/50 transition-all" style="${a.status === 'resolved' ? 'opacity:0.65;' : ''}">
-        <div class="flex items-start gap-4">
-          <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:${s.bg};">
-            <i data-lucide="${s.icon}" class="w-5 h-5" style="color:${s.color};"></i>
-          </div>
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-3 flex-wrap mb-1">
-              <span class="text-sm font-semibold text-white">${a.title}</span>
-              <span class="badge ${s.badge}" style="font-size:10px;">${a.severity.charAt(0).toUpperCase() + a.severity.slice(1)}</span>
-              ${statusBadge[a.status]}
-              <span class="text-xs text-surface-500 font-mono">${a.id}</span>
+    if (alerts.length === 0) {
+      el.innerHTML = '<div class="p-5 text-center text-surface-400">No recent alerts - add some assets and scan them to see real security data here.</div>';
+      return;
+    }
+
+    const sevMap = {
+      critical: { badge: 'badge-critical', icon: 'zap', bg: 'rgba(244,63,94,0.12)', color: '#f43f5e' },
+      high: { badge: 'badge-high', icon: 'triangle-alert', bg: 'rgba(249,115,22,0.12)', color: '#f97316' },
+      medium: { badge: 'badge-medium', icon: 'info', bg: 'rgba(234,179,8,0.12)', color: '#eab308' },
+      low: { badge: 'badge-low', icon: 'check-circle', bg: 'rgba(34,197,94,0.12)', color: '#22c55e' },
+      info: { badge: 'badge-info', icon: 'info', bg: 'rgba(6,182,212,0.12)', color: '#06b6d4' },
+    };
+
+    el.innerHTML = alerts.map(a => {
+      const s = sevMap[a.severity] || sevMap.info;
+      const timeStr = new Date(a.created_at).toLocaleString();
+
+      return `
+        <div class="p-5 hover:bg-surface-900/50 transition-all">
+          <div class="flex items-start gap-4">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:${s.bg};">
+              <i data-lucide="${s.icon}" class="w-5 h-5" style="color:${s.color};"></i>
             </div>
-            <div class="text-xs text-surface-400 mb-1">${a.asset} — ${a.time}</div>
-            <div class="text-xs text-surface-500 mb-2">${a.desc}</div>
-            <div class="flex items-start gap-2 p-2.5 rounded-lg" style="background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);">
-              <i data-lucide="brain-circuit" class="w-3.5 h-3.5 flex-shrink-0 mt-0.5" style="color:#a78bfa;"></i>
-              <span class="text-xs" style="color:#c4b5fd;">
-                <strong style="color:#a78bfa;">AI:</strong> ${a.ai}
-              </span>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-3 flex-wrap mb-1">
+                <span class="text-sm font-semibold text-white">${a.title}</span>
+                <span class="badge ${s.badge}" style="font-size:10px;">${a.severity.charAt(0).toUpperCase() + a.severity.slice(1)}</span>
+                <span class="text-xs text-surface-500 font-mono">REAL-${a.alert_id}</span>
+              </div>
+              <div class="text-xs text-surface-400 mb-1">${a.url} — ${timeStr}</div>
+              <div class="text-xs text-surface-500 mb-2">${a.description ? a.description.substring(0, 200) : 'No description available'}</div>
             </div>
           </div>
-          <div class="flex items-center gap-2 flex-shrink-0">${actionBtn}</div>
-        </div>
-      </div>`;
-  }).join('');
+        </div>`;
+    }).join('');
 
-  lucide.createIcons();
+    lucide.createIcons();
+  } catch (error) {
+    console.error('Failed to load alerts:', error);
+    el.innerHTML = '<div class="p-5 text-center text-surface-400">Error loading alerts</div>';
+  }
 }
+
+
 
 /* ============================================================
    SECTION 7: RENDER — VULNERABILITIES TABLE
    ============================================================ */
 
-function renderVulns() {
+async function renderVulns() {
   const tbody = document.getElementById('vuln-tbody');
   if (!tbody) return;
 
-  const sevBadge     = { critical: 'badge-critical', high: 'badge-high', medium: 'badge-medium', low: 'badge-low' };
-  const priorityColor = { P0: '#f43f5e', P1: '#f97316', P2: '#eab308', P3: '#22c55e' };
-  const statusBadge  = {
-    open:          '<span class="badge badge-critical" style="font-size:9px;">Open</span>',
-    investigating: '<span class="badge badge-medium"   style="font-size:9px;">Investigating</span>',
-    resolved:      '<span class="badge badge-ok"       style="font-size:9px;">Resolved</span>',
-  };
+  try {
+    const res = await fetch('/api/vulnerabilities', {
+      headers: { 'Authorization': `Bearer ${_jwt}` }
+    });
 
-  tbody.innerHTML = VULNS.map(v => {
-    const cvssColor = v.cvss >= 9 ? '#f43f5e' : v.cvss >= 7 ? '#f97316' : v.cvss >= 4 ? '#eab308' : '#22c55e';
-    return `
-      <tr class="table-row">
-        <td class="px-5 py-3.5 font-mono text-xs text-aegis-400">${v.id}</td>
-        <td class="px-4 py-3.5 text-sm font-medium text-white">${v.name}</td>
-        <td class="px-4 py-3.5 text-xs text-surface-400">${v.asset}</td>
-        <td class="px-4 py-3.5"><span class="text-sm font-bold" style="color:${cvssColor};">${v.cvss}</span></td>
-        <td class="px-4 py-3.5">
-          <span class="badge ${sevBadge[v.severity]}" style="font-size:10px;">
-            ${v.severity.charAt(0).toUpperCase() + v.severity.slice(1)}
-          </span>
-        </td>
-        <td class="px-4 py-3.5">
-          <span class="font-mono text-xs font-bold" style="color:${priorityColor[v.priority]};">${v.priority}</span>
-        </td>
-        <td class="px-4 py-3.5">${statusBadge[v.status]}</td>
-        <td class="px-4 py-3.5"><button class="btn-secondary text-xs py-1 px-2.5">Details</button></td>
-      </tr>`;
-  }).join('');
+    if (!res.ok) {
+      tbody.innerHTML = '<tr><td colspan="8" class="text-center p-6 text-surface-400">Failed to load vulnerabilities</td></tr>';
+      return;
+    }
 
-  lucide.createIcons();
+    const data = await res.json();
+    const vulns = data.vulnerabilities || [];
+
+    tbody.innerHTML = '<tr><td colspan="8" class="text-center p-6 text-surface-400">No vulnerabilities detected. Real vulnerability scanner integration pending.</td></tr>';
+  } catch (error) {
+    console.error('Failed to load vulnerabilities:', error);
+    tbody.innerHTML = '<tr><td colspan="8" class="text-center p-6 text-surface-400">Error loading vulnerabilities</td></tr>';
+  }
 }
+
+
 
 /* ============================================================
    SECTION 8: RENDER — AUDIT TIMELINE
