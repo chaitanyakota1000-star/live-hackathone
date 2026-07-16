@@ -23,7 +23,7 @@ async function applySession() {
     });
     if (!res.ok) {
       if (res.status === 401 || res.status === 403) doSignOut();
-      return;
+      throw new Error('API missing');
     }
     const data = await res.json();
     _session = data.user;
@@ -87,6 +87,8 @@ async function fetchAlerts() {
     if (res.ok) {
       ALERTS = await res.json();
       renderAlerts();
+    } else {
+      throw new Error('API missing');
     }
   } catch (err) {
     console.warn('Backend unreachable (Demo Mode). Loading mock alerts...');
@@ -141,6 +143,8 @@ async function fetchStats() {
           badgeLastScan.textContent = 'N/A';
         }
       }
+    } else {
+      throw new Error('API missing');
     }
   } catch (err) {
     console.warn('Backend unreachable (Demo Mode). Loading mock stats...');
@@ -272,6 +276,8 @@ async function fetchAssets() {
         };
       });
       renderAssets();
+    } else {
+      throw new Error('API missing');
     }
   } catch (err) {
     console.warn('Backend unreachable (Demo Mode). Loading mock assets...');
@@ -550,8 +556,7 @@ async function fetchAuditLogs() {
       AUDIT_LOGS = await res.json();
       renderAudit();
     } else {
-      if(loading) loading.classList.add('hidden');
-      if(error) error.classList.remove('hidden');
+      throw new Error('API missing');
     }
   } catch (err) {
     console.warn('Backend unreachable (Demo Mode). Loading mock audit logs...');
