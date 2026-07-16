@@ -38,13 +38,7 @@
         <div class="card">
             <h3>Monitored Assets</h3>
             <div id="sitesList">
-                <div class="site-row">
-                    <span>https://enterprise-panel.net</span>
-                    <div>
-                        <span class="badge critical">SUSPICIOUS</span>
-                        <button onclick="triggerCheck(2)">Check Now</button>
-                    </div>
-                </div>
+                <p style="color: #94a3b8;">Loading monitored assets...</p>
             </div>
             
             <!-- 3. Dynamic AI Summary Display Panel -->
@@ -56,7 +50,68 @@
     </div>
 
     <script>
-        // Simple frontend connection wireup
+        // Fetch sites dynamically on load
+        window.onload = async () => {
+            await loadSites();
+        };
+
+        async function loadSites() {
+            try {
+                const response = await fetch('/api/sites');
+                const sites = await response.json();
+                const sitesList = document.getElementById('sitesList');
+                sitesList.innerHTML = ''; // Clear loading message
+                
+                if (!sites || sites.length === 0) {
+                    sitesList.innerHTML = '<p style="color: #94a3b8;">No monitored assets found.</p>';
+                    return;
+                }
+
+                sites.forEach(site => {
+                    const row = document.createElement('div');
+                    row.className = 'site-row';
+                    
+                    // Simple logic to mock a "suspicious" badge for the seeded demo asset
+                    const badgeClass = site.id === 1 ? 'critical' : 'healthy';
+                    const badgeText = site.id === 1 ? 'SUSPICIOUS' : 'SECURE';
+
+                    row.innerHTML = `
+                        <span>${site.url}</span>
+                        <div>
+                            <span class="badge ${badgeClass}">${badgeText}</span>
+                            <button onclick="triggerCheck(${site.id})">Check Now</button>
+                        </div>
+                    `;
+                    sitesList.appendChild(row);
+                });
+            } catch (err) {
+                document.getElementById('sitesList').innerHTML = '<p style="color: #ef4444;">Error connecting to backend API.</p>';
+            }
+        }
+
+        async function addSite() {
+            const urlInput = document.getElementById('urlInput');
+            const url = urlInput.value.trim();
+            if (!url) return alert('Please enter a valid URL.');
+            
+            try {
+                const response = await fetch('/api/sites', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+                if (response.ok) {
+                    urlInput.value = '';
+                    await loadSites(); // Reload list dynamically
+                } else {
+                    alert('Failed to register site. API returned an error.');
+                }
+            } catch (err) {
+                alert('Network error connecting to backend API.');
+            }
+        }
+
+        // Analytical Engine Trigger
         async function triggerCheck(siteId) {
             const textPanel = document.getElementById('analysisText');
             const panel = document.getElementById('analysisPanel');
@@ -65,12 +120,10 @@
             panel.style.display = "block";
 
             try {
-                // Execute the live synchronized API route configuration
                 const response = await fetch(`/api/sites/${siteId}/check`, { method: 'POST' });
                 const data = await response.json();
                 
                 if (data.status === "CHECK_COMPLETE") {
-                    // Update layout securely with plain-text blocks avoiding layout breaking
                     textPanel.innerText = `Severity: ${data.analysis.severity}\n\n${data.analysis.summary}`;
                 } else {
                     textPanel.innerText = "Error analyzing the document diff matrix execution pipeline.";
@@ -78,10 +131,6 @@
             } catch (err) {
                 textPanel.innerText = "Network exception error routing to API application node.";
             }
-        }
-
-        function addSite() {
-            alert("URL registry path accepted. Parameter row successfully logged into persistent storage state.");
         }
     </script>
 </body>
