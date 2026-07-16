@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AEGIS — AI-Powered Web Security Platform</title>
+
+  <!-- Tailwind CDN (must load before config) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- External dependencies -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind theme config (external) -->
+  <script src="tailwind.config.js"></script>
+
+  <!-- Platform stylesheet -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="bg-surface-950 text-surface-100 font-sans antialiased overflow-x-hidden">
+
+<!-- ============================================================
+     APP WRAPPER
+     ============================================================ -->
+<div class="flex min-h-screen grid-bg">
+
+<!-- ============================================================
+     SIDEBAR
+     ============================================================ -->
+<aside id="sidebar" class="sidebar fixed left-0 top-0 h-screen z-50 flex flex-col"
+       style="background:linear-gradient(180deg,rgba(9,14,28,0.98) 0%,rgba(2,6,23,0.99) 100%);border-right:1px solid rgba(51,65,85,0.4);">
+
+  <!-- Logo -->
+  <div class="px-6 py-5 flex items-center gap-3" style="border-bottom:1px solid rgba(51,65,85,0.4);">
+    <div class="relative">
+      <div class="w-9 h-9 rounded-lg flex items-center justify-center"
+           style="background:linear-gradient(135deg,#0891b2,#06b6d4);box-shadow:0 0 16px rgba(6,182,212,0.4);">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+      </div>
+      <div class="pulse-dot cyan" style="position:absolute;bottom:-1px;right:-1px;width:8px;height:8px;"></div>
+    </div>
+    <div>
+      <div class="font-black text-white tracking-tight text-lg leading-none">AEGIS</div>
+      <div class="text-xs text-surface-500 font-medium mt-0.5">Security Platform</div>
+    </div>
+    <div class="ml-auto"><span class="badge badge-ok" style="font-size:9px;">LIVE</span></div>
+  </div>
+
+  <!-- Nav links -->
+  <nav class="flex-1 py-4 overflow-y-auto px-3 space-y-1">
+    <div class="px-3 py-1.5 text-xs font-semibold text-surface-600 uppercase tracking-widest mb-2">Overview</div>
+
+    <a href="#" class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer text-sm font-medium" data-page="dashboard">
+      <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard
+    </a>
+    <a href="#" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer text-sm font-medium text-surface-400" data-page="assets">
+      <i data-lucide="globe" class="w-4 h-4"></i> Assets
+      <span class="ml-auto badge badge-info" style="font-size:9px;">12</span>
+    </a>
+
+    <div class="px-3 py-1.5 text-xs font-semibold text-surface-600 uppercase tracking-widest mb-2 mt-4">Monitoring</div>
+
+    <a href="#" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer text-sm font-medium text-surface-400" data-page="monitoring">
+      <i data-lucide="activity" class="w-4 h-4"></i> Real-Time Monitor
+      <span class="ml-auto pulse-dot red" style="width:7px;height:7px;"></span>
+    </a>
+    <a href="#" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer text-sm font-medium text-surface-400" data-page="alerts">
+      <i data-lucide="bell" class="w-4 h-4"></i> Alerts
+      <span class="ml-auto bg-critical-600 text-white text-xs font-bold px-1.5 rounded-full">7</span>
+    </a>
+
+    <div class="px-3 py-1.5 text-xs font-semibold text-surface-600 uppercase tracking-widest mb-2 mt-4">Intelligence</div>
+
+    <a href="#" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer text-sm font-medium text-surface-400" data-page="threats">
+      <i data-lucide="brain-circuit" class="w-4 h-4"></i> AI Threat Intel
+    </a>
+    <a href="#" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer text-sm font-medium text-surface-400" data-page="vulnerabilities">
+      <i data-lucide="shield-alert" class="w-4 h-4"></i> Vulnerabilities
+    </a>
+
+    <div class="px-3 py-1.5 text-xs font-semibold text-surface-600 uppercase tracking-widest mb-2 mt-4">Governance</div>
+
+    <a href="#" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer text-sm font-medium text-surface-400" data-page="compliance">
+      <i data-lucide="file-check-2" class="w-4 h-4"></i> Compliance
+    </a>
+    <a href="#" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer text-sm font-medium text-surface-400" data-page="audit">
+      <i data-lucide="scroll-text" class="w-4 h-4"></i> Audit Trail
+    </a>
+    <a href="#" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer text-sm font-medium text-surface-400" data-page="users">
+      <i data-lucide="users" class="w-4 h-4"></i> Users &amp; RBAC
+    </a>
+  </nav>
+
+  <!-- User profile footer -->
+  <div class="px-4 py-4" style="border-top:1px solid rgba(51,65,85,0.4);">
+    <div class="flex items-center gap-3">
+      <div id="user-avatar" class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0"
+           style="background:linear-gradient(135deg,#0891b2,#7c3aed);">?</div>
+      <div class="flex-1 min-w-0">
+        <div id="user-name" class="text-sm font-semibold text-white truncate">Loading…</div>
+        <div id="user-role" class="text-xs text-surface-500">—</div>
+      </div>
+      <button onclick="openProfilePanel()" class="text-surface-500 hover:text-aegis-400 transition-colors" title="View account">
+        <i data-lucide="user-circle" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </div>
+</aside>
+
+<!-- ============================================================
+     MAIN CONTENT AREA
+     ============================================================ -->
+<div class="main-content flex-1 flex flex-col min-h-screen">
+
+  <!-- TOPBAR -->
+  <header class="sticky top-0 z-40 flex items-center gap-4 px-6 py-3.5"
+          style="background:rgba(2,6,23,0.9);backdrop-filter:blur(16px);border-bottom:1px solid rgba(51,65,85,0.35);">
+    <button id="menu-btn" class="lg:hidden text-surface-400 hover:text-white transition-colors mr-1">
+      <i data-lucide="menu" class="w-5 h-5"></i>
+    </button>
+    <div>
+      <h1 id="page-title"    class="text-white font-semibold text-base leading-none">Security Dashboard</h1>
+      <p  id="page-subtitle" class="text-xs text-surface-500 mt-0.5">Overview of your security posture</p>
+    </div>
+    <div class="ml-auto flex items-center gap-3">
+      <!-- Search -->
+      <div class="relative hidden md:flex items-center">
+        <i data-lucide="search" class="w-4 h-4 text-surface-500 absolute left-3"></i>
+        <input type="text" placeholder="Search assets, threats, CVEs…"
+               class="input-field pl-9 py-2 text-sm" style="width:280px;font-size:13px;" />
+        <span class="absolute right-3 text-xs text-surface-600 font-mono">Ctrl+K</span>
+      </div>
+      <!-- Status pill -->
+      <div class="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg"
+           style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);">
+        <div class="pulse-dot green" style="width:7px;height:7px;"></div>
+        <span class="text-xs text-cyber-400 font-semibold">All Systems Operational</span>
+      </div>
+      <!-- Notifications -->
+      <div class="relative tooltip">
+        <button onclick="navigate('alerts')"
+                class="w-9 h-9 rounded-lg flex items-center justify-center text-surface-400 hover:text-white hover:bg-surface-800 transition-all"
+                style="border:1px solid rgba(51,65,85,0.5);">
+          <i data-lucide="bell" class="w-4 h-4"></i>
+          <div class="notification-badge">7</div>
+        </button>
+        <span class="tooltip-text">7 active alerts</span>
+      </div>
+      <!-- Settings -->
+      <button class="w-9 h-9 rounded-lg flex items-center justify-center text-surface-400 hover:text-white hover:bg-surface-800 transition-all"
+              style="border:1px solid rgba(51,65,85,0.5);">
+        <i data-lucide="settings" class="w-4 h-4"></i>
+      </button>
+      <!-- Scan Now -->
+      <button onclick="triggerScan()" class="btn-primary text-xs px-4 py-2 hidden sm:inline-flex">
+        <i data-lucide="radar" class="w-3.5 h-3.5"></i> Scan Now
+      </button>
+    </div>
+  </header>
+
+  <!-- ========== PAGES ========== -->
+  <main class="flex-1 p-6 overflow-auto">
+
+<!-- ==================== PAGE: DASHBOARD ==================== -->
+<div id="page-dashboard" class="page active space-y-6">
+
+  <!-- KPI Cards -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="stat-card p-5" style="--accent:linear-gradient(90deg,#0891b2,#06b6d4);--glow:rgba(6,182,212,0.2);">
+      <div class="flex items-center justify-between mb-3">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:rgba(6,182,212,0.12);border:1px solid rgba(6,182,212,0.2);">
+          <i data-lucide="globe" class="w-5 h-5 text-aegis-400"></i>
+        </div>
+        <span class="badge badge-ok">+2 this week</span>
+      </div>
+      <div class="text-3xl font-black text-white mb-1">12</div>
+      <div class="text-sm text-surface-400 font-medium">Protected Assets</div>
+      <div class="mt-3 progress-bar"><div class="progress-fill" style="width:80%;background:linear-gradient(90deg,#0891b2,#06b6d4);"></div></div>
+    </div>
+    <div class="stat-card p-5" style="--accent:linear-gradient(90deg,#dc2626,#f43f5e);--glow:rgba(244,63,94,0.2);">
+      <div class="flex items-center justify-between mb-3">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:rgba(244,63,94,0.12);border:1px solid rgba(244,63,94,0.2);">
+          <i data-lucide="triangle-alert" class="w-5 h-5 text-critical-400"></i>
+        </div>
+        <span class="badge badge-critical">3 critical</span>
+      </div>
+      <div class="text-3xl font-black text-white mb-1">7</div>
+      <div class="text-sm text-surface-400 font-medium">Active Alerts</div>
+      <div class="mt-3 progress-bar"><div class="progress-fill" style="width:35%;background:linear-gradient(90deg,#dc2626,#f43f5e);"></div></div>
+    </div>
+    <div class="stat-card p-5" style="--accent:linear-gradient(90deg,#d97706,#f59e0b);--glow:rgba(245,158,11,0.2);">
+      <div class="flex items-center justify-between mb-3">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.2);">
+          <i data-lucide="shield-alert" class="w-5 h-5" style="color:#f59e0b;"></i>
+        </div>
+        <span class="badge badge-high">CVE-2025</span>
+      </div>
+      <div class="text-3xl font-black text-white mb-1">24</div>
+      <div class="text-sm text-surface-400 font-medium">Vulnerabilities</div>
+      <div class="mt-3 progress-bar"><div class="progress-fill" style="width:60%;background:linear-gradient(90deg,#d97706,#f59e0b);"></div></div>
+    </div>
+    <div class="stat-card p-5" style="--accent:linear-gradient(90deg,#16a34a,#22c55e);--glow:rgba(34,197,94,0.2);">
+      <div class="flex items-center justify-between mb-3">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.2);">
+          <i data-lucide="shield-check" class="w-5 h-5 text-cyber-400"></i>
+        </div>
+        <span class="badge badge-ok">↑ 4.2%</span>
+      </div>
+      <div class="text-3xl font-black text-white mb-1">87<span class="text-lg text-surface-400">/100</span></div>
+      <div class="text-sm text-surface-400 font-medium">Security Score</div>
+      <div class="mt-3 progress-bar"><div class="progress-fill" style="width:87%;background:linear-gradient(90deg,#16a34a,#22c55e);"></div></div>
+    </div>
+  </div>
+
+  <!-- Charts Row -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+    <div class="lg:col-span-2 card card-glow p-5">
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <h3 class="text-white font-semibold text-sm">Threat Activity</h3>
+          <p class="text-xs text-surface-500 mt-0.5">Last 30 days — detections &amp; scans</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="tab active text-xs py-1 px-3 rounded-lg" style="border-bottom:none;background:rgba(6,182,212,0.1);border:1px solid rgba(6,182,212,0.2);">30D</button>
+          <button class="tab text-xs py-1 px-3 rounded-lg" style="border-bottom:none;">7D</button>
+          <button class="tab text-xs py-1 px-3 rounded-lg" style="border-bottom:none;">24H</button>
+        </div>
+      </div>
+      <div style="height:220px;position:relative;"><canvas id="threatChart"></canvas></div>
+    </div>
+    <div class="card card-glow p-5 flex flex-col">
+      <h3 class="text-white font-semibold text-sm mb-1">Security Posture</h3>
+      <p class="text-xs text-surface-500 mb-4">AI-computed risk score</p>
+      <div class="flex-1 flex flex-col items-center justify-center">
+        <div class="relative" style="width:140px;height:140px;">
+          <svg width="140" height="140" viewBox="0 0 140 140">
+            <circle cx="70" cy="70" r="58" fill="none" stroke="rgba(30,41,59,0.8)" stroke-width="12"/>
+            <circle cx="70" cy="70" r="58" fill="none" stroke="url(#scoreGrad)" stroke-width="12"
+                    stroke-dasharray="364" stroke-dashoffset="47" stroke-linecap="round" class="risk-score-ring"/>
+            <defs>
+              <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%"   stop-color="#16a34a"/>
+                <stop offset="100%" stop-color="#22c55e"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <div class="absolute inset-0 flex flex-col items-center justify-center">
+            <div class="text-3xl font-black text-white">87</div>
+            <div class="text-xs text-cyber-400 font-semibold">GOOD</div>
+          </div>
+        </div>
+        <div class="mt-4 w-full space-y-2">
+          <div class="flex justify-between text-xs"><span class="text-surface-400">Network</span><span class="font-semibold text-white">92%</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:92%;background:linear-gradient(90deg,#0891b2,#22c55e);"></div></div>
+          <div class="flex justify-between text-xs"><span class="text-surface-400">Application</span><span class="font-semibold text-white">84%</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:84%;background:linear-gradient(90deg,#d97706,#22c55e);"></div></div>
+          <div class="flex justify-between text-xs"><span class="text-surface-400">Compliance</span><span class="font-semibold text-white">78%</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:78%;background:linear-gradient(90deg,#dc2626,#d97706);"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Incidents + Threat Origins -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+    <div class="lg:col-span-2 card p-5">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-white font-semibold text-sm">Recent Incidents</h3>
+        <button onclick="navigate('alerts')" class="text-xs text-aegis-400 hover:text-aegis-300 font-medium flex items-center gap-1">
+          View all <i data-lucide="arrow-right" class="w-3 h-3"></i>
+        </button>
+      </div>
+      <div class="space-y-2">
+        <div class="flex items-center gap-4 p-3 rounded-lg table-row">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background:rgba(244,63,94,0.12);"><i data-lucide="zap" class="w-4 h-4 text-critical-400"></i></div>
+          <div class="flex-1 min-w-0"><div class="text-sm font-medium text-white truncate">Website Defacement Detected</div><div class="text-xs text-surface-500">api.shopfront.com — Homepage HTML modified</div></div>
+          <div class="text-right flex-shrink-0"><span class="badge badge-critical">Critical</span><div class="text-xs text-surface-600 mt-1">2 min ago</div></div>
+        </div>
+        <div class="flex items-center gap-4 p-3 rounded-lg table-row">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background:rgba(249,115,22,0.12);"><i data-lucide="bug" class="w-4 h-4 text-threat-400"></i></div>
+          <div class="flex-1 min-w-0"><div class="text-sm font-medium text-white truncate">SQL Injection Attempt</div><div class="text-xs text-surface-500">portal.fintech.io — 47 blocked requests</div></div>
+          <div class="text-right flex-shrink-0"><span class="badge badge-high">High</span><div class="text-xs text-surface-600 mt-1">18 min ago</div></div>
+        </div>
+        <div class="flex items-center gap-4 p-3 rounded-lg table-row">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background:rgba(234,179,8,0.12);"><i data-lucide="scan" class="w-4 h-4" style="color:#fde047;"></i></div>
+          <div class="flex-1 min-w-0"><div class="text-sm font-medium text-white truncate">Unusual Bot Activity</div><div class="text-xs text-surface-500">www.healthportal.org — 1.2k req/min</div></div>
+          <div class="text-right flex-shrink-0"><span class="badge badge-medium">Medium</span><div class="text-xs text-surface-600 mt-1">1 hr ago</div></div>
+        </div>
+        <div class="flex items-center gap-4 p-3 rounded-lg table-row">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background:rgba(6,182,212,0.12);"><i data-lucide="key" class="w-4 h-4 text-aegis-400"></i></div>
+          <div class="flex-1 min-w-0"><div class="text-sm font-medium text-white truncate">SSL Certificate Expiring</div><div class="text-xs text-surface-500">legacy.govdata.net — Expires in 8 days</div></div>
+          <div class="text-right flex-shrink-0"><span class="badge badge-info">Info</span><div class="text-xs text-surface-600 mt-1">3 hr ago</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card p-5">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-white font-semibold text-sm">Threat Origins</h3>
+        <span class="badge badge-info">Live</span>
+      </div>
+      <div class="space-y-3">
+        <div><div class="flex justify-between text-xs mb-1.5"><span class="text-surface-300 font-medium">Russia</span><span class="text-surface-500">34%</span></div><div class="progress-bar"><div class="progress-fill" style="width:34%;background:linear-gradient(90deg,#f43f5e,#fb923c);"></div></div></div>
+        <div><div class="flex justify-between text-xs mb-1.5"><span class="text-surface-300 font-medium">China</span><span class="text-surface-500">28%</span></div><div class="progress-bar"><div class="progress-fill" style="width:28%;background:linear-gradient(90deg,#f97316,#fbbf24);"></div></div></div>
+        <div><div class="flex justify-between text-xs mb-1.5"><span class="text-surface-300 font-medium">North Korea</span><span class="text-surface-500">14%</span></div><div class="progress-bar"><div class="progress-fill" style="width:14%;background:linear-gradient(90deg,#a855f7,#6366f1);"></div></div></div>
+        <div><div class="flex justify-between text-xs mb-1.5"><span class="text-surface-300 font-medium">Iran</span><span class="text-surface-500">10%</span></div><div class="progress-bar"><div class="progress-fill" style="width:10%;background:linear-gradient(90deg,#06b6d4,#3b82f6);"></div></div></div>
+        <div><div class="flex justify-between text-xs mb-1.5"><span class="text-surface-300 font-medium">Unknown</span><span class="text-surface-500">14%</span></div><div class="progress-bar"><div class="progress-fill" style="width:14%;background:linear-gradient(90deg,#64748b,#94a3b8);"></div></div></div>
+      </div>
+      <div class="mt-4 pt-4 grid grid-cols-3 gap-2" style="border-top:1px solid rgba(51,65,85,0.5);">
+        <div class="text-center"><div class="text-lg font-black text-white">1.4k</div><div class="text-xs text-surface-500">Attacks/day</div></div>
+        <div class="text-center"><div class="text-lg font-black text-cyber-400">98.7%</div><div class="text-xs text-surface-500">Blocked</div></div>
+        <div class="text-center"><div class="text-lg font-black text-critical-400">18</div><div class="text-xs text-surface-500">Passed</div></div>
+      </div>
+    </div>
+  </div>
+</div><!-- /page-dashboard -->
+
+<!-- ==================== PAGE: ASSETS ==================== -->
+<div id="page-assets" class="page space-y-5">
+  <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+    <div class="flex-1">
+      <h2 class="text-lg font-bold text-white">Protected Assets</h2>
+      <p class="text-sm text-surface-500 mt-0.5">Manage and monitor all websites and digital assets under protection</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <input type="text" placeholder="Search assets…" class="input-field text-sm py-2 w-56" />
+      <button onclick="openModal('add-asset-modal')" class="btn-primary">
+        <i data-lucide="plus" class="w-4 h-4"></i> Add Asset
+      </button>
+    </div>
+  </div>
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="card p-4 flex items-center gap-3"><div class="pulse-dot green"  style="width:10px;height:10px;flex-shrink:0;"></div><div><div class="text-xl font-bold text-white">9</div><div class="text-xs text-surface-500">Healthy</div></div></div>
+    <div class="card p-4 flex items-center gap-3"><div class="pulse-dot red"    style="width:10px;height:10px;flex-shrink:0;"></div><div><div class="text-xl font-bold text-white">1</div><div class="text-xs text-surface-500">Compromised</div></div></div>
+    <div class="card p-4 flex items-center gap-3"><div class="pulse-dot yellow" style="width:10px;height:10px;flex-shrink:0;"></div><div><div class="text-xl font-bold text-white">2</div><div class="text-xs text-surface-500">Warning</div></div></div>
+    <div class="card p-4 flex items-center gap-3"><div class="w-2.5 h-2.5 rounded-full bg-surface-600 flex-shrink-0"></div><div><div class="text-xl font-bold text-white">0</div><div class="text-xs text-surface-500">Offline</div></div></div>
+  </div>
+  <div class="card overflow-hidden">
+    <div class="p-4 flex items-center gap-3" style="border-bottom:1px solid rgba(51,65,85,0.4);">
+      <h3 class="text-sm font-semibold text-white flex-1">All Assets</h3>
+      <button class="btn-secondary text-xs py-1.5 px-3"><i data-lucide="filter"   class="w-3 h-3"></i> Filter</button>
+      <button class="btn-secondary text-xs py-1.5 px-3"><i data-lucide="download" class="w-3 h-3"></i> Export</button>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr style="background:rgba(15,23,42,0.6);">
+            <th class="text-left px-5 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Asset / URL</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Status</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Risk Score</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Last Scan</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">SSL Expiry</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Vulnerabilities</th>
+            <th class="px-4 py-3"></th>
+          </tr>
+        </thead>
+        <tbody id="assets-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div><!-- /page-assets -->
+
+<!-- ==================== PAGE: MONITORING ==================== -->
+<div id="page-monitoring" class="page space-y-5">
+  <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+    <div>
+      <h2 class="text-lg font-bold text-white flex items-center gap-2">
+        Real-Time Monitor <span class="badge badge-critical" style="font-size:9px;animation:pulse 2s infinite;">LIVE</span>
+      </h2>
+      <p class="text-sm text-surface-500 mt-0.5">Continuous surveillance — defacement detection and behavioral analysis</p>
+    </div>
+    <div class="ml-auto flex items-center gap-2 px-3 py-2 rounded-lg" style="background:rgba(244,63,94,0.08);border:1px solid rgba(244,63,94,0.2);">
+      <div class="pulse-dot red" style="width:7px;height:7px;"></div>
+      <span class="text-xs text-critical-400 font-semibold">Defacement Detected</span>
+    </div>
+  </div>
+  <!-- Alert banner -->
+  <div class="rounded-xl p-4 flex items-start gap-4" style="background:rgba(244,63,94,0.08);border:1px solid rgba(244,63,94,0.25);">
+    <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(244,63,94,0.2);"><i data-lucide="zap" class="w-5 h-5 text-critical-400"></i></div>
+    <div class="flex-1">
+      <div class="font-semibold text-white text-sm">🚨 Website Defacement Detected — api.shopfront.com</div>
+      <div class="text-xs text-surface-400 mt-1">Detected 2 minutes ago · Homepage HTML structure changed by 34% · AI Confidence: 96%</div>
+    </div>
+    <div class="flex items-center gap-2 flex-shrink-0">
+      <button onclick="navigate('alerts')" class="btn-danger text-xs py-1.5 px-3">Investigate</button>
+      <button class="btn-secondary text-xs py-1.5 px-3">Dismiss</button>
+    </div>
+  </div>
+  <!-- Diff viewer -->
+  <div class="card p-5">
+    <div class="flex items-center justify-between mb-5">
+      <div><h3 class="text-white font-semibold text-sm">Visual Change Detection</h3><p class="text-xs text-surface-500 mt-0.5">Side-by-side diff — api.shopfront.com/index.html</p></div>
+      <div class="flex items-center gap-2"><span class="badge badge-critical">34% Changed</span><button class="btn-secondary text-xs py-1.5 px-3"><i data-lucide="download" class="w-3 h-3"></i> Export Diff</button></div>
+    </div>
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <div class="flex items-center gap-2 mb-2"><div class="w-2 h-2 rounded-full bg-cyber-500"></div><span class="text-xs text-surface-400 font-mono">BEFORE — 2026-07-16 14:00:00 UTC</span></div>
+        <div class="rounded-lg font-mono text-xs leading-6 p-4 space-y-0.5" style="background:rgba(15,23,42,0.8);border:1px solid rgba(51,65,85,0.5);max-height:280px;overflow-y:auto;">
+          <div class="text-surface-400">&lt;!DOCTYPE html&gt;</div>
+          <div class="text-surface-400">&lt;html lang="en"&gt;</div>
+          <div class="text-surface-400">&lt;head&gt;</div>
+          <div class="text-surface-400 pl-4">&lt;title&gt;ShopFront — API Portal&lt;/title&gt;</div>
+          <div class="text-surface-400">&lt;/head&gt;</div>
+          <div class="text-surface-400">&lt;body&gt;</div>
+          <div class="text-surface-400 pl-4">&lt;h1&gt;Welcome to ShopFront API&lt;/h1&gt;</div>
+          <div class="text-surface-400 pl-4">&lt;p&gt;Secure API gateway for all services&lt;/p&gt;</div>
+          <div class="text-surface-400">&lt;/body&gt;</div>
+        </div>
+      </div>
+      <div>
+        <div class="flex items-center gap-2 mb-2"><div class="w-2 h-2 rounded-full bg-critical-500"></div><span class="text-xs text-surface-400 font-mono">AFTER — 2026-07-16 14:02:14 UTC</span></div>
+        <div class="rounded-lg font-mono text-xs leading-6 p-4 space-y-0.5" style="background:rgba(15,23,42,0.8);border:1px solid rgba(244,63,94,0.4);max-height:280px;overflow-y:auto;">
+          <div class="text-surface-400">&lt;!DOCTYPE html&gt;</div>
+          <div class="diff-new pl-4 text-cyber-300 rounded">&lt;title&gt;HACKED BY GH0ST_H4CK3R&lt;/title&gt;</div>
+          <div class="diff-new pl-4 text-cyber-300 rounded">&lt;script src="//evil.ru/payload.js"&gt;&lt;/script&gt;</div>
+          <div class="text-surface-400">&lt;body&gt;</div>
+          <div class="diff-old pl-4 text-critical-300 rounded line-through">&lt;h1&gt;Welcome to ShopFront API&lt;/h1&gt;</div>
+          <div class="diff-new pl-4 text-cyber-300 rounded">&lt;h1 style="color:red"&gt;THIS SITE HAS BEEN COMPROMISED&lt;/h1&gt;</div>
+          <div class="diff-new pl-4 text-cyber-300 rounded">&lt;img src="//evil.ru/defaced.png" /&gt;</div>
+          <div class="diff-old pl-4 text-critical-300 rounded line-through">&lt;p&gt;Secure API gateway for all services&lt;/p&gt;</div>
+        </div>
+      </div>
+    </div>
+    <div class="grid grid-cols-4 gap-4 mt-4 pt-4" style="border-top:1px solid rgba(51,65,85,0.4);">
+      <div class="text-center"><div class="text-xl font-bold text-critical-400">3</div><div class="text-xs text-surface-500">Lines Added</div></div>
+      <div class="text-center"><div class="text-xl font-bold text-cyber-400">2</div><div class="text-xs text-surface-500">Lines Removed</div></div>
+      <div class="text-center"><div class="text-xl font-bold text-threat-400">1</div><div class="text-xs text-surface-500">External Script</div></div>
+      <div class="text-center"><div class="text-xl font-bold text-white">96%</div><div class="text-xs text-surface-500">AI Confidence</div></div>
+    </div>
+  </div>
+  <!-- Live feed + coverage chart -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+    <div class="card p-5">
+      <h3 class="text-white font-semibold text-sm mb-4">Live Monitoring Feed</h3>
+      <div id="monitor-feed" class="space-y-2 max-h-64 overflow-y-auto font-mono text-xs"></div>
+    </div>
+    <div class="card p-5">
+      <h3 class="text-white font-semibold text-sm mb-4">Scan Coverage</h3>
+      <div style="height:200px;"><canvas id="coverageChart"></canvas></div>
+    </div>
+  </div>
+</div><!-- /page-monitoring -->
+
+<!-- ==================== PAGE: AI THREAT INTEL ==================== -->
+<div id="page-threats" class="page space-y-5">
+  <div class="flex items-center justify-between">
+    <div><h2 class="text-lg font-bold text-white">AI Threat Intelligence</h2><p class="text-sm text-surface-500 mt-0.5">ML-powered threat detection, risk prioritisation, and remediation</p></div>
+    <div class="flex items-center gap-2 px-3 py-2 rounded-lg" style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.25);">
+      <div class="ai-thinking"><span></span><span></span><span></span></div>
+      <span class="text-xs font-semibold" style="color:#a78bfa;">AI Engine Active</span>
+    </div>
+  </div>
+  <!-- AI briefing card -->
+  <div class="card p-6" style="background:linear-gradient(135deg,rgba(88,28,135,0.12) 0%,rgba(15,23,42,0.95) 100%);border-color:rgba(139,92,246,0.3);">
+    <div class="flex items-start gap-4">
+      <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style="background:linear-gradient(135deg,#7c3aed,#4f46e5);">
+        <i data-lucide="brain-circuit" class="w-6 h-6 text-white"></i>
+      </div>
+      <div class="flex-1">
+        <div class="flex items-center gap-2 mb-2"><span class="text-white font-semibold">AEGIS AI Security Briefing</span><span class="badge badge-info text-xs">Updated 4 min ago</span></div>
+        <p class="text-sm text-surface-300 leading-relaxed">Based on analysis of <strong class="text-white">1.4k+ events</strong> in the last 24 hours, your highest risk vector is <strong class="text-critical-400">unpatched XSS vulnerabilities</strong> on 3 assets. A coordinated attack campaign targeting similar fintech platforms has been observed globally — recommend immediate patching of CVE-2025-3841 and CVE-2025-4190.</p>
+        <div class="flex items-center gap-3 mt-3">
+          <button class="btn-primary text-xs py-1.5 px-4" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Run Deep Analysis
+          </button>
+          <button class="btn-secondary text-xs py-1.5 px-4">View Full Report</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Threat cards -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="card p-5 hover:card-glow transition-all cursor-pointer" style="border-color:rgba(244,63,94,0.3);">
+      <div class="flex items-center justify-between mb-3"><span class="badge badge-critical">Critical</span><span class="text-xs text-surface-500 font-mono">CVE-2025-3841</span></div>
+      <h4 class="text-white font-semibold text-sm mb-2">Cross-Site Scripting (XSS)</h4>
+      <p class="text-xs text-surface-400 leading-relaxed mb-4">Reflected XSS in login form allows attackers to inject malicious scripts. Affects 3 assets with CVSS 9.1.</p>
+      <div class="flex items-center gap-2"><div class="flex-1 progress-bar"><div class="progress-fill" style="width:91%;background:linear-gradient(90deg,#dc2626,#f43f5e);"></div></div><span class="text-xs font-bold text-critical-400">9.1</span></div>
+      <div class="mt-3 pt-3 flex items-center gap-2" style="border-top:1px solid rgba(51,65,85,0.5);"><span class="text-xs text-surface-500">AI Fix:</span><span class="text-xs text-cyber-400 font-medium">Sanitize input with DOMPurify</span></div>
+    </div>
+    <div class="card p-5 hover:card-glow transition-all cursor-pointer" style="border-color:rgba(249,115,22,0.3);">
+      <div class="flex items-center justify-between mb-3"><span class="badge badge-high">High</span><span class="text-xs text-surface-500 font-mono">CVE-2025-4190</span></div>
+      <h4 class="text-white font-semibold text-sm mb-2">SQL Injection</h4>
+      <p class="text-xs text-surface-400 leading-relaxed mb-4">Unsanitized user input in search endpoint allows database extraction. Affects portal.fintech.io.</p>
+      <div class="flex items-center gap-2"><div class="flex-1 progress-bar"><div class="progress-fill" style="width:78%;background:linear-gradient(90deg,#d97706,#f97316);"></div></div><span class="text-xs font-bold text-threat-400">7.8</span></div>
+      <div class="mt-3 pt-3 flex items-center gap-2" style="border-top:1px solid rgba(51,65,85,0.5);"><span class="text-xs text-surface-500">AI Fix:</span><span class="text-xs text-cyber-400 font-medium">Use parameterised queries</span></div>
+    </div>
+    <div class="card p-5 hover:card-glow transition-all cursor-pointer">
+      <div class="flex items-center justify-between mb-3"><span class="badge badge-medium">Medium</span><span class="text-xs text-surface-500 font-mono">MISCONFIG-022</span></div>
+      <h4 class="text-white font-semibold text-sm mb-2">Security Headers Missing</h4>
+      <p class="text-xs text-surface-400 leading-relaxed mb-4">CSP, X-Frame-Options, HSTS headers absent on 5 endpoints. Exposes to clickjacking.</p>
+      <div class="flex items-center gap-2"><div class="flex-1 progress-bar"><div class="progress-fill" style="width:58%;background:linear-gradient(90deg,#ca8a04,#eab308);"></div></div><span class="text-xs font-bold" style="color:#fde047;">5.8</span></div>
+      <div class="mt-3 pt-3 flex items-center gap-2" style="border-top:1px solid rgba(51,65,85,0.5);"><span class="text-xs text-surface-500">AI Fix:</span><span class="text-xs text-cyber-400 font-medium">Add headers in server config</span></div>
+    </div>
+    <div class="card p-5 hover:card-glow transition-all cursor-pointer">
+      <div class="flex items-center justify-between mb-3"><span class="badge badge-medium">Medium</span><span class="text-xs text-surface-500 font-mono">TLS-WEAK-001</span></div>
+      <h4 class="text-white font-semibold text-sm mb-2">Weak TLS Configuration</h4>
+      <p class="text-xs text-surface-400 leading-relaxed mb-4">TLS 1.0/1.1 still enabled on legacy.govdata.net. Should enforce TLS 1.3 only.</p>
+      <div class="flex items-center gap-2"><div class="flex-1 progress-bar"><div class="progress-fill" style="width:55%;background:linear-gradient(90deg,#ca8a04,#eab308);"></div></div><span class="text-xs font-bold" style="color:#fde047;">5.5</span></div>
+      <div class="mt-3 pt-3 flex items-center gap-2" style="border-top:1px solid rgba(51,65,85,0.5);"><span class="text-xs text-surface-500">AI Fix:</span><span class="text-xs text-cyber-400 font-medium">Disable TLS &lt; 1.2 in nginx.conf</span></div>
+    </div>
+    <div class="card p-5 hover:card-glow transition-all cursor-pointer">
+      <div class="flex items-center justify-between mb-3"><span class="badge badge-low">Low</span><span class="text-xs text-surface-500 font-mono">INFO-LEAK-008</span></div>
+      <h4 class="text-white font-semibold text-sm mb-2">Server Version Disclosure</h4>
+      <p class="text-xs text-surface-400 leading-relaxed mb-4">HTTP response headers expose server/framework versions enabling targeted attacks.</p>
+      <div class="flex items-center gap-2"><div class="flex-1 progress-bar"><div class="progress-fill" style="width:31%;background:linear-gradient(90deg,#16a34a,#22c55e);"></div></div><span class="text-xs font-bold text-cyber-400">3.1</span></div>
+      <div class="mt-3 pt-3 flex items-center gap-2" style="border-top:1px solid rgba(51,65,85,0.5);"><span class="text-xs text-surface-500">AI Fix:</span><span class="text-xs text-cyber-400 font-medium">Remove Server header</span></div>
+    </div>
+    <div class="card p-5 hover:card-glow transition-all cursor-pointer">
+      <div class="flex items-center justify-between mb-3"><span class="badge badge-info">Emerging</span><span class="text-xs text-surface-500 font-mono">AI-DETECT</span></div>
+      <h4 class="text-white font-semibold text-sm mb-2">AI Anomaly: Unusual Access</h4>
+      <p class="text-xs text-surface-400 leading-relaxed mb-4">ML model detected access pattern deviation +340% above baseline on admin endpoints from 3 new IPs.</p>
+      <div class="flex items-center gap-2"><div class="flex-1 progress-bar"><div class="progress-fill" style="width:65%;background:linear-gradient(90deg,#0891b2,#6366f1);"></div></div><span class="text-xs font-bold text-aegis-400">AI</span></div>
+      <div class="mt-3 pt-3 flex items-center gap-2" style="border-top:1px solid rgba(51,65,85,0.5);"><span class="text-xs text-surface-500">AI Fix:</span><span class="text-xs text-cyber-400 font-medium">Block IPs, review admin access logs</span></div>
+    </div>
+  </div>
+</div><!-- /page-threats -->
+
+<!-- ==================== PAGE: ALERTS ==================== -->
+<div id="page-alerts" class="page space-y-5">
+  <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+    <div><h2 class="text-lg font-bold text-white">Alerts &amp; Incident Response</h2><p class="text-sm text-surface-500 mt-0.5">Triage, investigate, and respond to security incidents</p></div>
+    <div class="ml-auto flex items-center gap-3">
+      <select class="input-field text-sm py-2 w-40"><option>All Severity</option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select>
+      <select class="input-field text-sm py-2 w-36"><option>All Status</option><option>Open</option><option>Investigating</option><option>Resolved</option></select>
+    </div>
+  </div>
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="card p-4"><div class="text-2xl font-black text-critical-400">3</div><div class="text-xs text-surface-500 mt-1">Critical Open</div></div>
+    <div class="card p-4"><div class="text-2xl font-black text-threat-400">2</div><div class="text-xs text-surface-500 mt-1">High Open</div></div>
+    <div class="card p-4"><div class="text-2xl font-black" style="color:#fde047;">2</div><div class="text-xs text-surface-500 mt-1">Medium Open</div></div>
+    <div class="card p-4"><div class="text-2xl font-black text-cyber-400">14</div><div class="text-xs text-surface-500 mt-1">Resolved Today</div></div>
+  </div>
+  <div class="card overflow-hidden">
+    <div id="alerts-list" class="divide-y" style="divide-color:rgba(30,41,59,0.8);"></div>
+  </div>
+</div><!-- /page-alerts -->
+
+<!-- ==================== PAGE: VULNERABILITIES ==================== -->
+<div id="page-vulnerabilities" class="page space-y-5">
+  <div class="flex items-center justify-between">
+    <div><h2 class="text-lg font-bold text-white">Vulnerability Management</h2><p class="text-sm text-surface-500 mt-0.5">Discovered vulnerabilities ranked by AI-assessed risk priority</p></div>
+    <button class="btn-primary"><i data-lucide="scan" class="w-4 h-4"></i> New Scan</button>
+  </div>
+  <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+    <div class="stat-card p-4" style="--accent:linear-gradient(90deg,#dc2626,#f43f5e);--glow:rgba(244,63,94,0.2);"><div class="text-2xl font-black text-critical-400">4</div><div class="text-xs text-surface-500 mt-1">Critical</div></div>
+    <div class="stat-card p-4" style="--accent:linear-gradient(90deg,#d97706,#f59e0b);--glow:rgba(245,158,11,0.2);"><div class="text-2xl font-black text-threat-400">8</div><div class="text-xs text-surface-500 mt-1">High</div></div>
+    <div class="stat-card p-4" style="--accent:linear-gradient(90deg,#ca8a04,#eab308);--glow:rgba(234,179,8,0.2);"><div class="text-2xl font-black" style="color:#fde047;">7</div><div class="text-xs text-surface-500 mt-1">Medium</div></div>
+    <div class="stat-card p-4" style="--accent:linear-gradient(90deg,#16a34a,#22c55e);--glow:rgba(34,197,94,0.2);"><div class="text-2xl font-black text-cyber-400">5</div><div class="text-xs text-surface-500 mt-1">Low</div></div>
+    <div class="stat-card p-4" style="--accent:linear-gradient(90deg,#0891b2,#06b6d4);--glow:rgba(6,182,212,0.2);"><div class="text-2xl font-black text-aegis-400">24</div><div class="text-xs text-surface-500 mt-1">Total</div></div>
+  </div>
+  <div class="card overflow-hidden">
+    <table class="w-full text-sm">
+      <thead>
+        <tr style="background:rgba(15,23,42,0.6);">
+          <th class="text-left px-5 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">CVE / ID</th>
+          <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Vulnerability</th>
+          <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Asset</th>
+          <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">CVSS</th>
+          <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Severity</th>
+          <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">AI Priority</th>
+          <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Status</th>
+          <th class="px-4 py-3"></th>
+        </tr>
+      </thead>
+      <tbody id="vuln-tbody"></tbody>
+    </table>
+  </div>
+</div><!-- /page-vulnerabilities -->
+
+<!-- ==================== PAGE: COMPLIANCE ==================== -->
+<div id="page-compliance" class="page space-y-5">
+  <div><h2 class="text-lg font-bold text-white">Compliance &amp; Risk Management</h2><p class="text-sm text-surface-500 mt-0.5">Track compliance posture against industry standards and regulatory frameworks</p></div>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+    <!-- ISO 27001 -->
+    <div class="card p-5">
+      <div class="flex items-center justify-between mb-4"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white text-sm" style="background:linear-gradient(135deg,#0891b2,#06b6d4);">ISO</div><div><div class="text-white font-semibold text-sm">ISO 27001</div><div class="text-xs text-surface-500">Information Security</div></div></div><span class="badge badge-ok">Compliant</span></div>
+      <div class="text-4xl font-black text-white mb-3">82<span class="text-xl text-surface-500">%</span></div>
+      <div class="progress-bar mb-4"><div class="progress-fill" style="width:82%;background:linear-gradient(90deg,#0891b2,#22c55e);"></div></div>
+      <div class="space-y-2">
+        <div class="flex justify-between text-xs"><span class="text-surface-400">Access Control</span><span class="text-cyber-400 font-semibold">✓ Pass</span></div>
+        <div class="flex justify-between text-xs"><span class="text-surface-400">Cryptography</span><span class="text-cyber-400 font-semibold">✓ Pass</span></div>
+        <div class="flex justify-between text-xs"><span class="text-surface-400">Incident Mgmt</span><span class="text-threat-400 font-semibold">⚠ Partial</span></div>
+        <div class="flex justify-between text-xs"><span class="text-surface-400">Risk Assessment</span><span class="text-critical-400 font-semibold">✗ Fail</span></div>
+      </div>
+    </div>
+    <!-- SOC 2 -->
+    <div class="card p-5">
+      <div class="flex items-center justify-between mb-4"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white text-sm" style="background:linear-gradient(135deg,#7c3aed,#4f46e5);">SOC</div><div><div class="text-white font-semibold text-sm">SOC 2 Type II</div><div class="text-xs text-surface-500">Service Organization</div></div></div><span class="badge badge-medium">In Progress</span></div>
+      <div class="text-4xl font-black text-white mb-3">71<span class="text-xl text-surface-500">%</span></div>
+      <div class="progress-bar mb-4"><div class="progress-fill" style="width:71%;background:linear-gradient(90deg,#7c3aed,#0891b2);"></div></div>
+      <div class="space-y-2">
+        <div class="flex justify-between text-xs"><span class="text-surface-400">Security</span><span class="text-cyber-400 font-semibold">✓ Pass</span></div>
+        <div class="flex justify-between text-xs"><span class="text-surface-400">Availability</span><span class="text-cyber-400 font-semibold">✓ Pass</span></div>
+        <div class="flex justify-between text-xs"><span class="text-surface-400">Confidentiality</span><span class="text-threat-400 font-semibold">⚠ Partial</span></div>
+        <div class="flex justify-between text-xs"><span class="text-surface-400">Processing Integrity</span><span class="text-critical-400 font-semibold">✗ Fail</span></div>
+      </div>
+    </div>
+    <!-- NIST -->
+    <div class="card p-5">
+      <div class="flex items-center justify-between mb-4"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white text-sm" style="background:linear-gradient(135deg,#059669,#10b981);">NIST</div><div><div class="text-white font-semibold text-sm">NIST CSF</div><div class="text-xs text-surface-500">Cybersecurity Framework</div></div></div><span class="badge badge-ok">Compliant</span></div>
+      <div class="text-4xl font-black text-white mb-3">89<span class="text-xl text-surface-500">%</span></div>
+      <div class="progress-bar mb-4"><div class="progress-fill" style="width:89%;background:linear-gradient(90deg,#059669,#22c55e);"></div></div>
+      <div class="space-y-2">
+        <div class="flex justify-between text-xs"><span class="text-surface-400">Identify</span><span class="text-cyber-400 font-semibold">✓ Pass</span></div>
+        <div class="flex justify-between text-xs"><span class="text-surface-400">Protect</span><span class="text-cyber-400 font-semibold">✓ Pass</span></div>
+        <div class="flex justify-between text-xs"><span class="text-surface-400">Detect</span><span class="text-cyber-400 font-semibold">✓ Pass</span></div>
+        <div class="flex justify-between text-xs"><span class="text-surface-400">Respond</span><span class="text-threat-400 font-semibold">⚠ Partial</span></div>
+      </div>
+    </div>
+    <!-- PCI DSS -->
+    <div class="card p-5">
+      <div class="flex items-center justify-between mb-4"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white text-sm" style="background:linear-gradient(135deg,#dc2626,#b91c1c);">PCI</div><div><div class="text-white font-semibold text-sm">PCI DSS v4</div><div class="text-xs text-surface-500">Payment Card Security</div></div></div><span class="badge badge-high">Non-Compliant</span></div>
+      <div class="text-4xl font-black text-white mb-3">54<span class="text-xl text-surface-500">%</span></div>
+      <div class="progress-bar mb-4"><div class="progress-fill" style="width:54%;background:linear-gradient(90deg,#dc2626,#f97316);"></div></div>
+      <div class="space-y-2">
+        <div class="flex justify-between text-xs"><span class="text-surface-400">Network Security</span><span class="text-threat-400 font-semibold">⚠ Partial</span></div>
+        <div class="flex justify-between text-xs"><span class="text-surface-400">Data Protection</span><span class="text-critical-400 font-semibold">✗ Fail</span></div>
+        <div class="flex justify-between text-xs"><span class="text-surface-400">Access Control</span><span class="text-cyber-400 font-semibold">✓ Pass</span></div>
+        <div class="flex justify-between text-xs"><span class="text-surface-400">Monitoring</span><span class="text-critical-400 font-semibold">✗ Fail</span></div>
+      </div>
+    </div>
+    <!-- GDPR -->
+    <div class="card p-5">
+      <div class="flex items-center justify-between mb-4"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white text-sm" style="background:linear-gradient(135deg,#0369a1,#0284c7);">GDPR</div><div><div class="text-white font-semibold text-sm">GDPR</div><div class="text-xs text-surface-500">Data Privacy Regulation</div></div></div><span class="badge badge-ok">Compliant</span></div>
+      <div class="text-4xl font-black text-white mb-3">91<span class="text-xl text-surface-500">%</span></div>
+      <div class="progress-bar mb-4"><div class="progress-fill" style="width:91%;background:linear-gradient(90deg,#0369a1,#22c55e);"></div></div>
+      <div class="space-y-2">
+        <div class="flex justify-between text-xs"><span class="text-surface-400">Data Minimization</span><span class="text-cyber-400 font-semibold">✓ Pass</span></div>
+        <div class="flex justify-between text-xs"><span class="text-surface-400">Consent Management</span><span class="text-cyber-400 font-semibold">✓ Pass</span></div>
+        <div class="flex justify-between text-xs"><span class="text-surface-400">Right to Erasure</span><span class="text-cyber-400 font-semibold">✓ Pass</span></div>
+        <div class="flex justify-between text-xs"><span class="text-surface-400">Breach Notification</span><span class="text-threat-400 font-semibold">⚠ Partial</span></div>
+      </div>
+    </div>
+    <!-- OWASP -->
+    <div class="card p-5">
+      <div class="flex items-center justify-between mb-4"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white text-xs" style="background:linear-gradient(135deg,#ca8a04,#d97706);">OWASP</div><div><div class="text-white font-semibold text-sm">OWASP Top 10</div><div class="text-xs text-surface-500">Web App Security</div></div></div><span class="badge badge-medium">In Progress</span></div>
+      <div class="text-4xl font-black text-white mb-3">67<span class="text-xl text-surface-500">%</span></div>
+      <div class="progress-bar mb-4"><div class="progress-fill" style="width:67%;background:linear-gradient(90deg,#ca8a04,#0891b2);"></div></div>
+      <div class="space-y-2">
+        <div class="flex justify-between text-xs"><span class="text-surface-400">A01: Broken Access</span><span class="text-cyber-400 font-semibold">✓ Pass</span></div>
+        <div class="flex justify-between text-xs"><span class="text-surface-400">A02: Cryptographic</span><span class="text-threat-400 font-semibold">⚠ Partial</span></div>
+        <div class="flex justify-between text-xs"><span class="text-surface-400">A03: Injection</span><span class="text-critical-400 font-semibold">✗ Fail</span></div>
+        <div class="flex justify-between text-xs"><span class="text-surface-400">A07: Auth Failures</span><span class="text-cyber-400 font-semibold">✓ Pass</span></div>
+      </div>
+    </div>
+  </div>
+</div><!-- /page-compliance -->
+
+<!-- ==================== PAGE: AUDIT TRAIL ==================== -->
+<div id="page-audit" class="page space-y-5">
+  <div class="flex items-center justify-between">
+    <div><h2 class="text-lg font-bold text-white">Audit Trail</h2><p class="text-sm text-surface-500 mt-0.5">Immutable log of all platform actions for forensics and accountability</p></div>
+    <div class="flex items-center gap-3">
+      <input type="date" class="input-field text-sm py-2 w-44" />
+      <button class="btn-secondary text-sm py-2 px-4"><i data-lucide="download" class="w-4 h-4"></i> Export</button>
+    </div>
+  </div>
+  <div class="card overflow-hidden">
+    <div class="p-4 flex items-center gap-3" style="border-bottom:1px solid rgba(51,65,85,0.4);">
+      <div class="flex gap-2">
+        <button class="tab active text-xs" style="border-bottom:none;background:rgba(6,182,212,0.1);border:1px solid rgba(6,182,212,0.2);border-radius:6px;padding:4px 12px;">All</button>
+        <button class="tab text-xs" style="border-bottom:none;border-radius:6px;padding:4px 12px;">Security</button>
+        <button class="tab text-xs" style="border-bottom:none;border-radius:6px;padding:4px 12px;">Access</button>
+        <button class="tab text-xs" style="border-bottom:none;border-radius:6px;padding:4px 12px;">Config</button>
+      </div>
+      <div class="ml-auto"><input type="text" placeholder="Search audit logs…" class="input-field text-sm py-1.5 w-56" /></div>
+    </div>
+    <div id="audit-timeline" class="p-5 relative"></div>
+  </div>
+</div><!-- /page-audit -->
+
+<!-- ==================== PAGE: USERS & RBAC ==================== -->
+<div id="page-users" class="page space-y-5">
+  <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+    <div><h2 class="text-lg font-bold text-white">Users &amp; Role-Based Access Control</h2><p class="text-sm text-surface-500 mt-0.5">Manage team members, roles, and access permissions</p></div>
+    <button onclick="openModal('add-user-modal')" class="ml-auto btn-primary">
+      <i data-lucide="user-plus" class="w-4 h-4"></i> Invite User
+    </button>
+  </div>
+  <!-- Role summary cards -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="card p-4 cursor-pointer hover:card-glow transition-all">
+      <div class="flex items-center gap-3 mb-3"><div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background:linear-gradient(135deg,#dc2626,#f43f5e);"><i data-lucide="crown"  class="w-4 h-4 text-white"></i></div><div class="text-sm font-semibold text-white">Super Admin</div></div>
+      <div class="text-2xl font-black text-white">2</div><div class="text-xs text-surface-500 mt-1">Full system access</div>
+    </div>
+    <div class="card p-4 cursor-pointer hover:card-glow transition-all">
+      <div class="flex items-center gap-3 mb-3"><div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background:linear-gradient(135deg,#0891b2,#06b6d4);"><i data-lucide="shield" class="w-4 h-4 text-white"></i></div><div class="text-sm font-semibold text-white">Security Analyst</div></div>
+      <div class="text-2xl font-black text-white">5</div><div class="text-xs text-surface-500 mt-1">Monitor &amp; investigate</div>
+    </div>
+    <div class="card p-4 cursor-pointer hover:card-glow transition-all">
+      <div class="flex items-center gap-3 mb-3"><div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background:linear-gradient(135deg,#7c3aed,#4f46e5);"><i data-lucide="wrench" class="w-4 h-4 text-white"></i></div><div class="text-sm font-semibold text-white">Operator</div></div>
+      <div class="text-2xl font-black text-white">3</div><div class="text-xs text-surface-500 mt-1">Manage assets</div>
+    </div>
+    <div class="card p-4 cursor-pointer hover:card-glow transition-all">
+      <div class="flex items-center gap-3 mb-3"><div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background:linear-gradient(135deg,#475569,#334155);"><i data-lucide="eye"    class="w-4 h-4 text-white"></i></div><div class="text-sm font-semibold text-white">Read-Only</div></div>
+      <div class="text-2xl font-black text-white">4</div><div class="text-xs text-surface-500 mt-1">View reports only</div>
+    </div>
+  </div>
+  <!-- Users table -->
+  <div class="card overflow-hidden">
+    <div class="p-4" style="border-bottom:1px solid rgba(51,65,85,0.4);">
+      <div class="flex items-center gap-3">
+        <h3 class="text-sm font-semibold text-white flex-1">Team Members (14)</h3>
+        <input type="text" placeholder="Search users…" class="input-field text-sm py-1.5 w-56" />
+      </div>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr style="background:rgba(15,23,42,0.6);">
+            <th class="text-left px-5 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">User</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Role</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Status</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Last Active</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">2FA</th>
+            <th class="px-4 py-3"></th>
+          </tr>
+        </thead>
+        <tbody id="users-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div><!-- /page-users -->
+
+  </main>
+</div><!-- /main-content -->
+</div><!-- /app wrapper -->
+
+<!-- ==================== MODALS ==================== -->
+
+<!-- Add Asset -->
+<div id="add-asset-modal" class="modal">
+  <div class="modal-content">
+    <div class="flex items-center justify-between mb-6">
+      <div><h3 class="text-lg font-bold text-white">Add New Asset</h3><p class="text-xs text-surface-500 mt-1">Register a website or domain for continuous monitoring</p></div>
+      <button onclick="closeModal('add-asset-modal')" class="text-surface-500 hover:text-white transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    <div class="space-y-4">
+      <div><label class="text-xs text-surface-400 font-semibold uppercase tracking-wider block mb-2">Asset URL</label><input type="url" placeholder="https://example.com" class="input-field" /></div>
+      <div><label class="text-xs text-surface-400 font-semibold uppercase tracking-wider block mb-2">Display Name</label><input type="text" placeholder="My Production Site" class="input-field" /></div>
+      <div><label class="text-xs text-surface-400 font-semibold uppercase tracking-wider block mb-2">Scan Frequency</label><select class="input-field"><option>Every 5 minutes</option><option>Every 15 minutes</option><option>Every hour</option><option>Daily</option></select></div>
+      <div><label class="text-xs text-surface-400 font-semibold uppercase tracking-wider block mb-2">Tags</label><input type="text" placeholder="production, critical, fintech" class="input-field" /></div>
+      <div class="flex items-center gap-3 pt-2">
+        <button onclick="closeModal('add-asset-modal')" class="btn-secondary flex-1">Cancel</button>
+        <button onclick="addAssetDemo()" class="btn-primary flex-1"><i data-lucide="plus" class="w-4 h-4"></i> Add &amp; Start Monitoring</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Invite User -->
+<div id="add-user-modal" class="modal">
+  <div class="modal-content">
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="text-lg font-bold text-white">Invite Team Member</h3>
+      <button onclick="closeModal('add-user-modal')" class="text-surface-500 hover:text-white transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    <div class="space-y-4">
+      <div><label class="text-xs text-surface-400 font-semibold uppercase tracking-wider block mb-2">Email Address</label><input type="email" placeholder="name@company.com" class="input-field" /></div>
+      <div><label class="text-xs text-surface-400 font-semibold uppercase tracking-wider block mb-2">Full Name</label><input type="text" placeholder="John Smith" class="input-field" /></div>
+      <div><label class="text-xs text-surface-400 font-semibold uppercase tracking-wider block mb-2">Role</label><select class="input-field"><option>Security Analyst</option><option>Operator</option><option>Read-Only</option><option>Super Admin</option></select></div>
+      <div class="flex items-center gap-3 pt-2">
+        <button onclick="closeModal('add-user-modal')" class="btn-secondary flex-1">Cancel</button>
+        <button onclick="closeModal('add-user-modal')" class="btn-primary flex-1"><i data-lucide="send" class="w-4 h-4"></i> Send Invitation</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SCAN OVERLAY ==================== -->
+<div id="scan-overlay" style="display:none;position:fixed;inset:0;background:rgba(2,6,23,0.92);backdrop-filter:blur(8px);z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:20px;">
+  <div style="width:120px;height:120px;position:relative;">
+    <div style="position:absolute;inset:0;border-radius:50%;border:2px solid rgba(6,182,212,0.2);"></div>
+    <div style="position:absolute;inset:8px;border-radius:50%;border:2px solid rgba(6,182,212,0.15);animation:spin 3s linear infinite;"></div>
+    <div style="position:absolute;inset:16px;border-radius:50%;border:2px solid rgba(6,182,212,0.3);animation:spin 2s linear infinite reverse;"></div>
+    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    </div>
+  </div>
+  <div style="text-align:center;">
+    <div style="color:white;font-size:18px;font-weight:700;font-family:Inter,sans-serif;">Scanning All Assets</div>
+    <div id="scan-status" style="color:#64748b;font-size:13px;margin-top:4px;font-family:Inter,sans-serif;">Initializing AI security scan…</div>
+  </div>
+  <div style="width:320px;height:6px;background:rgba(30,41,59,0.8);border-radius:6px;overflow:hidden;">
+    <div id="scan-progress" style="height:100%;width:0%;background:linear-gradient(90deg,#0891b2,#06b6d4);border-radius:6px;transition:width 0.3s ease;"></div>
+  </div>
+</div>
+
+<!-- ==================== PROFILE PANEL ==================== -->
+<div id="profile-panel" class="modal">
+  <div class="modal-content" style="max-width:480px;">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="text-lg font-bold text-white">Account Details</h3>
+      <button onclick="closeProfilePanel()" class="text-surface-500 hover:text-white transition-colors">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+
+    <!-- Avatar + name -->
+    <div class="flex items-center gap-4 mb-6 p-4 rounded-xl" style="background:rgba(6,182,212,0.06);border:1px solid rgba(6,182,212,0.15);">
+      <div id="pp-avatar" class="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-black text-white flex-shrink-0"
+           style="background:linear-gradient(135deg,#0891b2,#7c3aed);">?</div>
+      <div>
+        <div id="pp-name"  class="text-xl font-bold text-white">—</div>
+        <div id="pp-email" class="text-sm text-surface-400 mt-0.5">—</div>
+        <span id="pp-role" class="mt-2 inline-block text-xs font-semibold px-2.5 py-1 rounded-full"
+              style="background:rgba(6,182,212,0.12);border:1px solid rgba(6,182,212,0.25);color:#22d3ee;">—</span>
+      </div>
+    </div>
+
+    <!-- Details grid -->
+    <div class="grid grid-cols-2 gap-3 mb-6">
+      <div class="p-3 rounded-xl" style="background:rgba(15,23,42,0.6);border:1px solid rgba(51,65,85,0.4);">
+        <div class="text-xs text-surface-500 uppercase tracking-wider mb-1">Phone</div>
+        <div id="pp-phone" class="text-sm font-semibold text-white">—</div>
+      </div>
+      <div class="p-3 rounded-xl" style="background:rgba(15,23,42,0.6);border:1px solid rgba(51,65,85,0.4);">
+        <div class="text-xs text-surface-500 uppercase tracking-wider mb-1">Auth Method</div>
+        <div id="pp-method" class="text-sm font-semibold text-white">—</div>
+      </div>
+      <div class="p-3 rounded-xl col-span-2" style="background:rgba(15,23,42,0.6);border:1px solid rgba(51,65,85,0.4);">
+        <div class="text-xs text-surface-500 uppercase tracking-wider mb-1">Last Sign-In</div>
+        <div id="pp-login" class="text-sm font-semibold text-white font-mono">—</div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex items-center gap-3">
+      <button onclick="closeProfilePanel()" class="btn-secondary flex-1">Close</button>
+      <button onclick="doSignOut()" class="btn-danger flex-1">
+        <i data-lucide="log-out" class="w-4 h-4"></i> Sign Out
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== EXTERNAL SCRIPTS ==================== -->
+<script src="app.js"></script>
+</body>
+</html>
