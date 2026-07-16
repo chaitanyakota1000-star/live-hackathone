@@ -21,5 +21,4 @@ databases:
   - name: system-siege-db
     plan: free
     databaseName: system_siege
-    user: postgres
     region: ohio
